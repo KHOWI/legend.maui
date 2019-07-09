@@ -53,7 +53,7 @@ def movement_checker(stage,player_new):
     elif player_new[0] == stage[0]:
         valid = False
         print("No")
-    elif player_new[0] == stage[1]:
+    elif player_new[1] == stage[1]:
         valid = False
         print("No")
     else:
