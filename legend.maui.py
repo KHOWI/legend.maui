@@ -1,7 +1,6 @@
 ##
 #  The Legend of Maui
-#  V0.04
-
+#  V0.05
 
 def map_generator_1():
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
@@ -14,7 +13,6 @@ def movement_processor(stage,player):
     """Takes input from players to move"""
     player_x = player[0]
     player_y = player[1]
-    print(player_x,player_y)
 
     valid = False
     while not valid:
@@ -24,18 +22,18 @@ def movement_processor(stage,player):
                 and movement !="right"
                     and movement !="left"):
             print("Please enter a valid command.")
-        elif movement == "up":
-            player_x = player_x + 1
         elif movement == "down":
-            player_x = player_x - 1
-        elif movement == "left":
             player_y = player_y + 1
-        elif movement == "right":
+        elif movement == "up":
             player_y = player_y - 1
+        elif movement == "right":
+            player_x = player_x + 1
+        elif movement == "left":
+            player_x = player_x - 1
 
         player_new = [player_x,player_y]
         valid = movement_checker(stage,player_new)
-        #  reset t
+        #  reset the x and y
         if not valid:
             player_x = player[0]
             player_y = player[1]
@@ -50,10 +48,10 @@ def movement_checker(stage,player_new):
     elif player_new[1] == 0:
         valid = False
         print("No")
-    elif player_new[0] == stage[0]:
+    elif player_new[0] > stage[0]:
         valid = False
         print("No")
-    elif player_new[1] == stage[1]:
+    elif player_new[1] > stage[1]:
         valid = False
         print("No")
     else:
@@ -63,8 +61,25 @@ def movement_checker(stage,player_new):
     
         
 
-def map_displayer(player):
+def map_displayer(stage,player):
     """Displays the map in the console"""
+    print("=============================================")
+    x = 1
+    y = 1
+    player_x = player[0]
+    player_y = player[1]
+    while y < stage[0]:
+        while x <stage[1]:
+            if x == player_x and y == player_y:
+                print('X', end='')
+            else:
+                print('O', end='')
+            x += 1
+        print("")
+        y+=1
+        x=1
+            
+    
     print(player)
 
 def main():
@@ -75,7 +90,7 @@ def main():
 
     playing = True
     while playing:
-        map_displayer(player)
+        map_displayer(stage,player)
         player = movement_processor(stage,player)
     pass
 
