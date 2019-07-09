@@ -1,11 +1,11 @@
 ##
 #  The Legend of Maui
-#  V0.01
+#  V0.03
 
 
 def map_generator_1():
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
-    STAGE_1 = ([5],[5]],[[1],[1])
+    STAGE_1 = ([5,5],[1,1])
     
     return STAGE_1
 
@@ -13,17 +13,22 @@ def map_generator_1():
 def movement_processor(player):
     """Takes input from players to move"""
     movement = input().lower()
+    player_x = player[0]
+    player_y = player[1]
+    print(player_x,player_y)
     
     if movement != "up" and movement and "down" and movement !="right" and movement !="left":
         print("broke")
     elif movement == "up":
-        player[0] = player[0] + 1
+        player_x = player_x + 1
     elif movement == "down":
-        player[0] = player[0] - 1
+        player_x = player_x - 1
     elif movement == "left":
-        player[1] = player[1] + 1
+        player_y = player_y + 1
     elif movement == "right":
-        player[1] = player[1] - 1
+        player_y = player_y - 1
+
+    player = [player_x,player_y]
     return player
 
 def movement_checker(stage,player_new):
