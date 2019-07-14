@@ -1,22 +1,38 @@
 ##
 #  The Legend of Maui
-#  V0.05
+#  V0.06
 
-def map_generator_1():
+def map_generator_1(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
     STAGE_1 = ([5,5],[1,1])
-    
-    return STAGE_1
+    STAGE_1_TILES = {
+        "1,2":"rock",
+        "1,3":"mountain"}
+    if option == "stage":
+        return STAGE_1
+    elif option == "tiles":
+        return STAGE_1_TILES
+    else:
+        print("Something Broke! map_generator_1")
 
+def tile_set():
+    """Contains the data for tiles"""
+    TILES = {
+        "ocean":"O"
+        ,"rock":"V"
+        ,"mountain":"W"
+        ,"player":"X"
+        }
+    return TILES
 
-def movement_processor(stage,player):
+def movement_processor(stage,player,stage_tiles):
     """Takes input from players to move"""
     player_x = player[0]
     player_y = player[1]
 
     valid = False
     while not valid:
-        movement = input("Enter a movement").lower()
+        movement = input("Enter a movement:").lower()
         if (movement != "up"
             and movement != "down"
                 and movement !="right"
@@ -61,17 +77,17 @@ def movement_checker(stage,player_new):
     
         
 
-def map_displayer(stage,player):
+def map_displayer(stage,player,stage_tiles,TILES):
     """Displays the map in the console"""
     print("=============================================")
     x = 1
     y = 1
     player_x = player[0]
     player_y = player[1]
-    while y < stage[0]:
+    while y != stage[0]:
         while x <stage[1]:
             if x == player_x and y == player_y:
-                print('X', end='')
+                print(TILES.get("player","O"), end='')
             else:
                 print('O', end='')
             x += 1
@@ -84,14 +100,17 @@ def map_displayer(stage,player):
 
 def main():
     """Main Routine"""
-    stage = map_generator_1()
+    stage = map_generator_1("stage")
     player = stage[1]
     stage = stage[0]
+    stage_tiles = map_generator_1("tiles")
+    
+    TILES = tile_set()
 
     playing = True
     while playing:
-        map_displayer(stage,player)
-        player = movement_processor(stage,player)
+        map_displayer(stage,player,stage_tiles,TILES)
+        player = movement_processor(stage,player,stage_tiles)
     pass
 
 main()
