@@ -1,13 +1,16 @@
 ##
 #  The Legend of Maui
-#  V0.07
-
+#  V0.08
+## =====-----------  ----------=====
+## =====----------- Map Generation ----------=====
 def map_generator_1(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
     STAGE_1 = ([5,5],[1,1]) 
     STAGE_1_TILES = {
         "1,2":"rock",
-        "1,3":"mountain"}
+        "1,3":"mountain",
+        "5,5":"end"
+        }
     if option == "stage":
         return STAGE_1
     elif option == "tiles":
@@ -22,9 +25,13 @@ def tile_set():
         ,"rock":"V"
         ,"mountain":"W"
         ,"player":"X"
+        ,"end":"E"
         }
     return TILES
 
+## =====----------- Turn Processing ----------=====
+
+#  ------------------ Movement -----------------
 def movement_processor(stage,player,stage_tiles):
     """Takes input from players to move"""
     player_x = player[0]
@@ -47,36 +54,55 @@ def movement_processor(stage,player,stage_tiles):
         elif movement == "left":
             player_x = player_x - 1
 
+        #  Movement Validation starts here
         player_new = [player_x,player_y]
-        valid = movement_checker(stage,player_new)
-        #  reset the x and y
+        valid = boundary_checker(stage,player_new)
+        if valid:
+            valid = tile_checker(stage_tiles,player_new)
+
+        #  Reset the x and y
         if not valid:
             player_x = player[0]
             player_y = player[1]
     
     return player_new
 
-def movement_checker(stage,player_new):
+def boundary_checker(stage,player_new):
     """Checks to see whether movement is valid"""
     if player_new[0] == 0:
         valid = False
-        print("No")
+        print("You can't leave the map!")
     elif player_new[1] == 0:
         valid = False
-        print("No")
+        print("You can't leave the map!")
     elif player_new[0] > stage[0]:
         valid = False
-        print("No")
+        print("You can't leave the map!")
     elif player_new[1] > stage[1]:
         valid = False
-        print("No")
+        print("You can't leave the map!")
     else:
         valid = True
-        print("Yes")
     return valid
-    
-        
 
+def tile_checker(stage_tiles,player_new):
+    """Checks to see what tile the player would be on"""
+    tile = stage_tiles.get("{0},{1}".format(player_new[0],player_new[1]),"ocean")
+    if tile == "rock" or tile == "mountain":
+        valid = False
+        print("You can't sail into a {}!".format(tile))
+    else:
+        valid = True
+    return valid
+
+
+def special_condition_checker(stage_tiles,player_new):
+    """Checks to see whether there is a special condition triggered by the player"""
+    tile = stage_tiles.get("{0},{1}".format(player_new[0],player_new[1]),"ocean")
+    
+## =====----------- UI Elements ----------=====
+
+#  ------------------ Map Gen -----------------
 def map_displayer(stage,player,stage_tiles,TILES):
     """Displays the map in the console"""
     print("=============================================")
