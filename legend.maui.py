@@ -1,10 +1,10 @@
 ##
 #  The Legend of Maui
-#  V0.06
+#  V0.07
 
 def map_generator_1(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
-    STAGE_1 = ([5,5],[1,1])
+    STAGE_1 = ([5,5],[1,1]) 
     STAGE_1_TILES = {
         "1,2":"rock",
         "1,3":"mountain"}
@@ -39,9 +39,9 @@ def movement_processor(stage,player,stage_tiles):
                     and movement !="left"):
             print("Please enter a valid command.")
         elif movement == "down":
-            player_y = player_y + 1
-        elif movement == "up":
             player_y = player_y - 1
+        elif movement == "up":
+            player_y = player_y + 1
         elif movement == "right":
             player_x = player_x + 1
         elif movement == "left":
@@ -81,19 +81,22 @@ def map_displayer(stage,player,stage_tiles,TILES):
     """Displays the map in the console"""
     print("=============================================")
     x = 1
-    y = 1
+    y = stage[1]
     player_x = player[0]
     player_y = player[1]
-    while y != stage[0]:
-        while x <stage[1]:
+    while y > 0:
+        while x < stage[0]+1:
             if x == player_x and y == player_y:
-                print(TILES.get("player","O"), end='')
+                print(TILES.get("player","X"), end='')
+            elif "{0},{1}".format(x,y) in stage_tiles:
+                tile = stage_tiles.get("{0},{1}".format(x,y),"ocean")
+                print(TILES[tile],end='')
             else:
                 print('O', end='')
             x += 1
         print("")
-        y+=1
-        x=1
+        y-=1
+        x= 1
             
     
     print(player)
