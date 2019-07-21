@@ -1,7 +1,10 @@
 ##
 #  The Legend of Maui
-#  V0.09
-## =====-----------  ----------=====
+#  V0.10
+## =====----------- Color Module ----------=====
+import sys
+try: color = sys.stdout.shell
+except AttributeError: raise RuntimeError("Use IDLE")
 ## =====----------- Map Generation ----------=====
 def map_generator_1(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
@@ -12,6 +15,8 @@ def map_generator_1(option):
     STAGE_1_TILES = {         
         "1,2":"rock",
         "1,3":"mountain",
+        "3,3":"rock",
+        "4,5":"mountain",
         "5,5":"end"
     }
 
@@ -33,9 +38,9 @@ def map_generator_1(option):
 def tile_set():
     """Contains the data for tiles"""
     TILES = {
-        "ocean":"O"
-        ,"rock":"V"
-        ,"mountain":"W"
+        "ocean":"~"
+        ,"rock":"R"
+        ,"mountain":"M"
         ,"player":"X"
         ,"end":"E"
         }
@@ -89,16 +94,16 @@ def boundary_checker(stage, player_new):
     # Go through each possible direction a player can travel
     if player_new[0] == 0:
         valid = False
-        print("You can't leave the map!")
+        color.write("You can't leave the map!\n","ERROR")
     elif player_new[1] == 0:
         valid = False
-        print("You can't leave the map!")
+        color.write("You can't leave the map!\n","ERROR")
     elif player_new[0] > stage[0]:
         valid = False
-        print("You can't leave the map!")
+        color.write("You can't leave the map!\n","ERROR")
     elif player_new[1] > stage[1]:
         valid = False
-        print("You can't leave the map!")
+        color.write("You can't leave the map!\n","ERROR")
     # Flag validity if player still within bounds of map
     else:
         valid = True
@@ -112,7 +117,7 @@ def tile_checker(stage_tiles,
     #  Check each possible terrain
     if tile == "rock" or tile == "mountain":
         valid = False
-        print("You can't sail into a {}!".format(tile))
+        color.write("You can't sail into a {}!\n".format(tile),"ERROR")
     else:
         valid = True
 
@@ -136,7 +141,7 @@ def special_condition_checker(special_tiles,
 def map_displayer(stage, player,
                   stage_tiles, TILES):
     """Displays the map in the console"""
-    print("=============================================")  # Hard seperation to show that a new turn has begun
+    color.write("=============================================\n","STRING")  # Hard seperation to show that a new turn has begun
     # Setup variables
     x = 1
     y = stage[1]
@@ -146,13 +151,14 @@ def map_displayer(stage, player,
     while y > 0:
         while x < stage[0]+1:
             if x == player_x and y == player_y:
-                print(TILES.get("player", "X"), end='')
+                color.write(TILES.get("player", "X"), "KEYWORD")
             elif "{0},{1}".format(x, y) in stage_tiles:
                 tile = stage_tiles.get("{0},{1}".format(x, y), "ocean")
-                print(TILES[tile], end='')
+                color.write(TILES[tile], "stderr")
             else:
-                print('O', end='')
+                print(TILES["ocean"], end='')
             x += 1
+            print(" ",end='')
         print("")
         y -= 1
         x = 1
@@ -185,6 +191,6 @@ def main():
         if update == "end":
             playing = False
         # Perform post turn actions
-    print("Thanks for playing")
+    color.write("Thanks for playing!","KEYWORD")
 
 main()
