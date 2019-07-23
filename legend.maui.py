@@ -1,10 +1,46 @@
 ##
 #  The Legend of Maui
-#  V0.10
+#  V0.11
 ## =====----------- Color Module ----------=====
+import time
 import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")
+
+## =====----------- Menu/Intro ----------=====
+def intro():
+    color.write("A new dawn breaks the crest of the sea")
+    intro_dots()
+    color.write("The mighty sea rises, and from the depths a new hero arises")
+    intro_dots()
+    color.write("The era of man has begun")
+    intro_dots()
+    color.write("Awaken, and discover")
+    intro_dots()
+    time.sleep(1)
+    color.write("The Legend of Maui!\n","ERROR")
+    time.sleep(2)
+    color.write("""
+   _____                __ 
+  /     \ _____   __ __|__|
+ /  \ /  \\\__  \ |  |  \  |
+/    Y    \/ __ \|  |  /  |
+\____|__  (____  /____/|__|
+        \/     \/          \n""")
+    time.sleep(0.5)
+    color.write("   Press ENTER to begin!","KEYWORD")
+    input()
+    print("For right now R is Rock, M is mountain, E is End and X is you")
+
+def intro_dots():
+    i = 0
+    time.sleep(0.6)
+    while i != 3:
+        color.write(".")
+        time.sleep(0.6)
+        i += 1
+    print("")
+
 ## =====----------- Map Generation ----------=====
 def map_generator_1(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
@@ -48,46 +84,68 @@ def tile_set():
     return TILES
 
 ## =====----------- Turn Processing ----------=====
+def command_processor():
+    """Processes commands based on keyowrds that the user has entered"""
+    MOVEMENT = ["up","right","down","left","north","west","east","south"]
+    FISHING = ["fish","fishing"]
+    
+    validity = 0
+    while validity == 0:
+        command = []
+        action = input("Enter a command").lower()
+        action = ' ' + action + ' '
+        for direction in MOVEMENT:
+            if direction in action:
+                command.append('movement')
+                command.append(direction)
+                validity += 1
+
+        for fish in FISHING:
+            if fish in action:
+                command.append('fishing')
+                command.append(fish)
+                validity +=1
+
+        if validity > 1:
+            print("Please type less keywords")
+            validity = 0
+        elif validity == 1:
+            return command
+        elif validity == 0:
+            print("PLEASE TYPE A KEYWORD")
+    
 
 #  ------------------ Movement -----------------
 def movement_processor(stage, player,
-                       stage_tiles):
+                       stage_tiles,command):
     """Takes input from players to move"""
     player_x = player[0]
     player_y = player[1]
+    movement = command[1].strip().lower()
 
-    valid = False
-    while not valid:
-        movement = input("Enter a movement:").lower()
-        # Detect if the movement command is not valid
-        if (movement != "up"
-            and movement != "down"
-                and movement !="right"
-                    and movement !="left"):
-            print("Please enter a valid command.")
+    # Change player's co-ordinates appropriately
+    if movement == "down" or movement == "south":
+        player_y = player_y - 1
+    elif movement == "up" or movement == "north":
+        player_y = player_y + 1
+    elif movement == "right" or movement == "east":
+        player_x = player_x + 1
+    elif movement == "left" or movement == "west":
+        player_x = player_x - 1
 
-        # Change player's co-ordinates appropriately
-        elif movement == "down":
-            player_y = player_y - 1
-        elif movement == "up":
-            player_y = player_y + 1
-        elif movement == "right":
-            player_x = player_x + 1
-        elif movement == "left":
-            player_x = player_x - 1
-
-        # Movement validation
-        player_new = [player_x, player_y]
-        valid = boundary_checker(stage, player_new)
-        if valid:
-            valid = tile_checker(stage_tiles, player_new)
-
-        # Reset the x and y
-        if not valid:
-            player_x = player[0]
-            player_y = player[1]
-    
-    return player_new
+    # Movement validation
+    player_new = [player_x, player_y]
+    valid = boundary_checker(stage, player_new)
+    if valid:
+        valid = tile_checker(stage_tiles, player_new)
+        
+    # Reset the program
+    if not valid:
+        player_new = player
+        player_new.append(False)
+    else:
+        player_new.append(True)   
+    return player_new 
 
 def boundary_checker(stage, player_new):
     """Checks to see whether movement is would take the player out of bounds"""
@@ -162,9 +220,6 @@ def map_displayer(stage, player,
         print("")
         y -= 1
         x = 1
-            
-    
-    print(player)
 
 def main():
     """Main Routine"""
@@ -175,21 +230,42 @@ def main():
     stage_tiles = map_generator_1("tiles")
     special = map_generator_1("special")                              
     TILES = tile_set()
+    FISH = []
 
     # Menu
 
     # Intro
-    
+    intro() # Delete this to skip intro for now
     # Game Start
     playing = True
     while playing:
         map_displayer(stage,player, stage_tiles, TILES)
         # Print status
         # Ask player for command
-        player = movement_processor(stage, player, stage_tiles)
-        update = special_condition_checker(special, player)
-        if update == "end":
-            playing = False
+        turn = True
+        while turn:
+            command = command_processor()
+            # If player
+            if command[0] == 'movement':
+                player = movement_processor(stage, player, stage_tiles, command)
+                if player[2] == True:
+                    update = special_condition_checker(special, player)
+                    if update == "end":
+                        playing = False
+                    turn = False
+                    del player[-1]
+
+                elif player[2] == False:
+                    del player[-1]
+                else:
+                    print("Something crititcal has occured within the movement processcer")
+                    del player[-1]
+                    
+            elif command[0] == 'fishing':
+                print("Fishing time i havent actually developed this yet lol soz")
+                turn = False
+            else:
+                print("Beep Boop")
         # Perform post turn actions
     color.write("Thanks for playing!","KEYWORD")
 
