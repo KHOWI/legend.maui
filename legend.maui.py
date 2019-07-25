@@ -1,38 +1,53 @@
 ##
 #  The Legend of Maui
-#  V0.11
+#  V0.12
 ## =====----------- Color Module ----------=====
+import os
 import time
 import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")
+class PlayerWin(Exception): pass
+        
+class PlayerStarve(Exception): pass
 
-## =====----------- Menu/Intro ----------=====
+## =====----------- Menu/Sequences ----------=====
 def intro():
+    """Intro Sequence"""
     color.write("A new dawn breaks the crest of the sea")
     intro_dots()
-    color.write("The mighty sea rises, and from the depths a new hero arises")
+    color.write("The mighty sea beckons, and from the depths a new hero arises")
     intro_dots()
-    color.write("The era of man has begun")
+    color.write("Now is the time of man, and your people need a land in which to thrive")
     intro_dots()
-    color.write("Awaken, and discover")
+    color.write("Awaken, and discover Aotearoa as you begin")
     intro_dots()
     time.sleep(1)
-    color.write("The Legend of Maui!\n","ERROR")
+    color.write("The Legend of Māui!\n","ERROR")
     time.sleep(2)
     color.write("""
-   _____                __ 
-  /     \ _____   __ __|__|
- /  \ /  \\\__  \ |  |  \  |
-/    Y    \/ __ \|  |  /  |
-\____|__  (____  /____/|__|
-        \/     \/          \n""")
+                                                        
+     ______  _______          ____    ____   ____  ____ 
+    |      \/       \    ____|\   \  |    | |    ||    |
+   /          /\     \  /    /\    \ |    | |    ||    |
+  /     /\   / /\     ||    |  |    ||    | |    ||    |
+ /     /\ \_/ / /    /||    |__|    ||    | |    ||    |
+|     |  \|_|/ /    / ||    .--.    ||    \_/    ||    |
+|     |       |    |  ||    |  |    ||           ||    |
+|\____\       |____|  /|____|  |____||\__________||____|
+| |    |      |    | / |    |  |    || |         ||    |
+ \|____|      |____|/  |____|  |____| \|_________||____|
+    \(          )/       \(      )/      \(   )/    \(  
+     '          '         '      '        '   '      '  
+                                                        
+\n""")
     time.sleep(0.5)
-    color.write("   Press ENTER to begin!","KEYWORD")
+    color.write("                 Press ENTER to begin!","KEYWORD")
     input()
-    print("For right now R is Rock, M is mountain, E is End and X is you")
+    print("\nWelcome Māui,")
 
 def intro_dots():
+    """Prints the dots in the intro sequence"""
     i = 0
     time.sleep(0.6)
     while i != 3:
@@ -41,6 +56,44 @@ def intro_dots():
         i += 1
     print("")
 
+def ending(type):
+    
+    if type == "win":
+        time.sleep(1)
+        color.write("""
+                    -                                  
+                    \ \                               
+                    /    \                            
+                     \    \                            
+                      \    \                               
+                       \   /                           
+                        `  \                           
+                         |  \                         
+                         |   \                         
+                         |     \  ||                   
+                         |      | ||                   
+                         |          \                  
+                        /             \                
+                        |               \    ---\      
+                       /                  -/     |     
+                      -                         /      
+                    /                         /
+                /                            |
+               |                             |    
+                \ -                      / - -    
+                    \                 |           
+                      \                \          
+                       \               /          
+                        |           /             
+                       /          /               
+                      /        /                  
+                      |      /                    
+                      |    /                      
+                      \_ _/\n""")
+        color.write("You've fished up the North Island! Thanks for playing!","KEYWORD")
+    elif type == "starve":
+        color.write("lol you starved to death")
+        exit()
 ## =====----------- Map Generation ----------=====
 def map_generator_1(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
@@ -86,8 +139,10 @@ def tile_set():
 ## =====----------- Turn Processing ----------=====
 def command_processor():
     """Processes commands based on keyowrds that the user has entered"""
-    MOVEMENT = ["up","right","down","left","north","west","east","south"]
-    FISHING = ["fish","fishing"]
+    MOVEMENT = ["up","right","down","left","north","west","east","south","u","r","l","d"]
+    FISHING = ["fish","fishing"," f "]
+    HELP = ["help"," h "]
+    EAT = ["eat","eating","refuel","nom","e"]
     
     validity = 0
     while validity == 0:
@@ -95,16 +150,31 @@ def command_processor():
         action = input("Enter a command").lower()
         action = ' ' + action + ' '
         for direction in MOVEMENT:
+            direction = ' ' + direction + ' '
             if direction in action:
                 command.append('movement')
                 command.append(direction)
                 validity += 1
 
         for fish in FISHING:
+            fish = ' ' + fish + ' '
             if fish in action:
                 command.append('fishing')
                 command.append(fish)
                 validity +=1
+
+        for help in HELP:
+            help = ' ' + help + ' '
+            if help in action:
+                command.append("help")
+                validity += 1
+
+        for eat in EAT:
+            eat = ' ' + eat + ' '
+            if eat in action:
+                command.append("eat")
+                validity += 1
+        
 
         if validity > 1:
             print("Please type less keywords")
@@ -113,7 +183,61 @@ def command_processor():
             return command
         elif validity == 0:
             print("PLEASE TYPE A KEYWORD")
+
+def help_module():
+    helping = True
+    color.write("Hello! Welcome to the Legend of Maui! ")
+    while helping:
+        query = input("Enter the number of the subject you need help with")
+        if query == "":
+            helping = False
+#  ------------------ Fishing/Hunger -----------------
+def fishing_processor():
+    """Process fishing"""
+    pass
+
+def hunger_processor(turn,hunger):
+    """Process hunger per turn"""
+    hunger -= 1
+
+
+    if hunger <= 0:
+        pass
+    elif hunger > 6:
+        color.write("wait how","ERROR")
+    elif hunger == 4:
+        color.write("You begin to feel peckish","KEYWORD")
+    elif hunger == 3:
+        color.write("You feel hungry.","ERROR")
+    elif hunger == 2:
+        color.write("You feel hungry. You should probably eat soon","ERROR")
+    elif hunger == 1:
+        color.write("The throes of hunger stab at your being as your strength leaves you. You should definitely eat something.","ERROR")
+    print("")
     
+    return hunger
+
+def replenishment_processor(fish,hunger):
+    zip = []
+    zip.append(fish - 1)
+    zip.append(6)
+
+    if hunger > 3:
+        print("You eat a fish from your reserve, leaving you with {} left.".format(fish - 1))
+
+    elif hunger > 1:
+        print("You gobble down a fish from your reserve, leaving you with {} left.".format(fish - 1))
+
+    elif hunger > 0:
+        print("The taste of fish has never seemed so good as you devour one. You have {} left.".format(fish - 1))
+
+    elif hunger >= 0:
+        print("Somehow, you have survived at the brink of death. You vicously gobble down a fish, leaving you with {} left.".format(fish - 1))
+
+    print("\n")
+
+    return zip
+
 
 #  ------------------ Movement -----------------
 def movement_processor(stage, player,
@@ -124,13 +248,13 @@ def movement_processor(stage, player,
     movement = command[1].strip().lower()
 
     # Change player's co-ordinates appropriately
-    if movement == "down" or movement == "south":
+    if movement == "down" or movement == "south" or movement == "d":
         player_y = player_y - 1
-    elif movement == "up" or movement == "north":
+    elif movement == "up" or movement == "north" or movement == "u":
         player_y = player_y + 1
-    elif movement == "right" or movement == "east":
+    elif movement == "right" or movement == "east" or movement == "r":
         player_x = player_x + 1
-    elif movement == "left" or movement == "west":
+    elif movement == "left" or movement == "west" or movement == "l":
         player_x = player_x - 1
 
     # Movement validation
@@ -230,43 +354,69 @@ def main():
     stage_tiles = map_generator_1("tiles")
     special = map_generator_1("special")                              
     TILES = tile_set()
-    FISH = []
+    class PlayerWin(Exception): pass
+    class PlayerStarve(Exception): pass
+    fish = 4
+    hunger = 6
+    turn_number = 1
 
     # Menu
 
     # Intro
-    intro() # Delete this to skip intro for now
+    #intro() # Delete this to skip intro for now
     # Game Start
-    playing = True
-    while playing:
-        map_displayer(stage,player, stage_tiles, TILES)
-        # Print status
-        # Ask player for command
-        turn = True
-        while turn:
-            command = command_processor()
-            # If player
-            if command[0] == 'movement':
-                player = movement_processor(stage, player, stage_tiles, command)
-                if player[2] == True:
-                    update = special_condition_checker(special, player)
-                    if update == "end":
-                        playing = False
-                    turn = False
-                    del player[-1]
+    try:
+        playing = True
+        while playing:
+            map_displayer(stage,player, stage_tiles, TILES)
+            # Print status
+            # Ask player for command
+            turn = True
+            color.write("Turn {}\n".format(turn_number))
+            while turn:
+                
+                command = command_processor()
+                # If player
+                if command[0] == 'movement':
+                    player = movement_processor(stage, player, stage_tiles, command)
+                    if player[2] == True:
+                        update = special_condition_checker(special, player)
+                        if update == "end":
+                            raise PlayerWin
+                        turn = False
+                        del player[-1]
 
-                elif player[2] == False:
-                    del player[-1]
-                else:
-                    print("Something crititcal has occured within the movement processcer")
-                    del player[-1]
+                    elif player[2] == False:
+                        del player[-1]
+                    else:
+                        print("Something crititcal has occured within the movement processcer")
+                        del player[-1]
+                        
+                elif command[0] == 'fishing':
+                    print("Fishing time i havent actually developed this yet lol soz")
                     
-            elif command[0] == 'fishing':
-                print("Fishing time i havent actually developed this yet lol soz")
-                turn = False
-            else:
-                print("Beep Boop")
-        # Perform post turn actions
-    color.write("Thanks for playing!","KEYWORD")
 
+                elif command[0] == 'eat':
+                    unzip = replenishment_processor(fish,hunger)
+                    fish = unzip[0]
+                    hunger = unzip[1]
+
+                elif command[0] == 'help':
+                    help_module()
+                              
+                else:
+                    print("Beep Boop")
+
+            #  Perform post turn actions
+            hunger = hunger_processor(turn_number,hunger)
+            if hunger == 0:
+                raise PlayerStarve
+            turn_number += 1
+            
+    except PlayerWin:
+        ending("win")
+    except PlayerStarve:
+        ending("starve")
+    except:
+        print("broke")
 main()
