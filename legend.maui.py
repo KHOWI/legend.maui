@@ -1,9 +1,9 @@
 ##
 #  The Legend of Maui
-#  V0.12
+#  V0.13
 ## =====----------- Color Module ----------=====
-import os
 import time
+import random
 import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")
@@ -14,17 +14,20 @@ class PlayerStarve(Exception): pass
 ## =====----------- Menu/Sequences ----------=====
 def intro():
     """Intro Sequence"""
-    color.write("A new dawn breaks the crest of the sea")
-    intro_dots()
-    color.write("The mighty sea beckons, and from the depths a new hero arises")
-    intro_dots()
-    color.write("Now is the time of man, and your people need a land in which to thrive")
-    intro_dots()
-    color.write("Awaken, and discover Aotearoa as you begin")
-    intro_dots()
-    time.sleep(1)
-    color.write("The Legend of Māui!\n","ERROR")
-    time.sleep(2)
+    try:
+        color.write("A new dawn breaks the crest of the sea")
+        intro_dots()
+        color.write("The mighty sea beckons, and from the depths a new hero arises")
+        intro_dots()
+        color.write("Now is the time of man, and your people need a land in which to thrive")
+        intro_dots()
+        color.write("Awaken, and discover Aotearoa as you begin")
+        intro_dots()
+        time.sleep(1)
+        color.write("The Legend of Māui!\n","ERROR")
+        time.sleep(2)
+    except KeyboardInterrupt:
+        pass
     color.write("""
                                                         
      ______  _______          ____    ____   ____  ____ 
@@ -44,7 +47,10 @@ def intro():
     time.sleep(0.5)
     color.write("                 Press ENTER to begin!","KEYWORD")
     input()
-    print("\nWelcome Māui,")
+    color.write("\nHaere Mai Māui-tikitiki-a-Taranga, Māui-pōtiki, divine descendant of Tama-nui-te-rā.\n"
+          "Your future deeds are great and many, and now is the time to claim the title of Maui-te-whare-kino.\n"
+          "Embark now, and discover the land of the long white cloud.\n\n")
+    time.sleep(1)
 
 def intro_dots():
     """Prints the dots in the intro sequence"""
@@ -93,7 +99,7 @@ def ending(type):
         color.write("You've fished up the North Island! Thanks for playing!","KEYWORD")
     elif type == "starve":
         color.write("lol you starved to death")
-        exit()
+    exit()
 ## =====----------- Map Generation ----------=====
 def map_generator_1(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
@@ -136,18 +142,20 @@ def tile_set():
 
     return TILES
 
-## =====----------- Turn Processing ----------=====
+## =====----------- Turn Mechanics ----------=====
+
+#  ------------------ Turn Processing -----------------
 def command_processor():
     """Processes commands based on keyowrds that the user has entered"""
     MOVEMENT = ["up","right","down","left","north","west","east","south","u","r","l","d"]
-    FISHING = ["fish","fishing"," f "]
+    FISHING = ["fish","fishing","f"]
     HELP = ["help"," h "]
     EAT = ["eat","eating","refuel","nom","e"]
     
     validity = 0
     while validity == 0:
         command = []
-        action = input("Enter a command").lower()
+        action = input("Enter a command: ").lower()
         action = ' ' + action + ' '
         for direction in MOVEMENT:
             direction = ' ' + direction + ' '
@@ -163,7 +171,7 @@ def command_processor():
                 command.append(fish)
                 validity +=1
 
-        for help in HELP:
+        for help in HELP:   
             help = ' ' + help + ' '
             if help in action:
                 command.append("help")
@@ -184,26 +192,61 @@ def command_processor():
         elif validity == 0:
             print("PLEASE TYPE A KEYWORD")
 
+#  ------------------ Help -----------------
 def help_module():
     helping = True
-    color.write("Hello! Welcome to the Legend of Maui! ")
+    color.write("Hello! Welcome to the Legend of Maui!\n")
     while helping:
-        query = input("Enter the number of the subject you need help with")
+        query = input("""Enter the number of the subject you need help with:
+{1} Objective of the Game
+{2} Moving
+{3} Hunger
+{4} Eating
+{5} Terrain
+{6} Fishing
+Enter nothing to exit the help module""").lower().strip()
         if query == "":
             helping = False
+        elif query == "1":
+            color.write("The objective of the game is to move to the 'E' square, while trying not to starve to death.")
+        elif query == "2":
+            color.write("Enter sentences containing movement keywords to move. For example, 'I want to move right' will move the player right.")
+        elif query == "3":
+            color.write("You decay one hunger every turn, so make sure to pay attention to Maui's prompts to gauge your hunger!")
+        elif query == "4":
+            color.write("Enter sentences containing eating keywords to move. For example, 'Eat something' will consume a fish from your stores.")
+        elif query == "5":
+            color.write("""'R' = Rock
+'M' = Mountain
+'~' = Ocean
+'X' = Player""")
+        elif query == "6":
+            color.write("lol i havent implemeted this in")
+        print("\n")
+          
+        
 #  ------------------ Fishing/Hunger -----------------
-def fishing_processor():
+def fishing_processor(player,stage_tiles,fish):
     """Process fishing"""
-    pass
+    fish_chance = 50
+    tile = stage_tiles.get("{0},{1}".format(player[0], player[1]), "ocean")
+    if tile == "ocean":
+        fish_check = random.randint(1,100)
+        if fish_check <= fish_chance:
+           fish += 1
+           print("You caught a fish! You now have {0} fish.".format(fish))
+        else:
+            print("You failed to catch a fish...")
+    else:
+        print("You can't fish on this tile!")
+    return fish
 
 def hunger_processor(turn,hunger):
     """Process hunger per turn"""
     hunger -= 1
+    death_chance = 30
 
-
-    if hunger <= 0:
-        pass
-    elif hunger > 6:
+    if hunger > 6:
         color.write("wait how","ERROR")
     elif hunger == 4:
         color.write("You begin to feel peckish","KEYWORD")
@@ -213,28 +256,38 @@ def hunger_processor(turn,hunger):
         color.write("You feel hungry. You should probably eat soon","ERROR")
     elif hunger == 1:
         color.write("The throes of hunger stab at your being as your strength leaves you. You should definitely eat something.","ERROR")
+##    elif hunger > 0:
+##        death_check = random.randint(0,100)
+##        if death_check <= death_chance * hunger
     print("")
     
     return hunger
 
 def replenishment_processor(fish,hunger):
+    """Processes the eating to fish to replenish hunger"""
     zip = []
-    zip.append(fish - 1)
-    zip.append(6)
+    if fish == 0:
+        print("You don't have any fish!")
+        zip.append(fish)
+        zip.append(hunger)
+        return zip
+    else:
+        zip.append(fish - 1)
+        zip.append(6)
 
-    if hunger > 3:
-        print("You eat a fish from your reserve, leaving you with {} left.".format(fish - 1))
+        if hunger > 3:
+            print("You eat a fish from your reserve, leaving you with {} left.".format(fish - 1))
 
-    elif hunger > 1:
-        print("You gobble down a fish from your reserve, leaving you with {} left.".format(fish - 1))
+        elif hunger > 1:
+            print("You gobble down a fish from your reserve, leaving you with {} left.".format(fish - 1))
 
-    elif hunger > 0:
-        print("The taste of fish has never seemed so good as you devour one. You have {} left.".format(fish - 1))
+        elif hunger > 0:
+            print("The taste of fish has never seemed so good as you devour one. You have {} left.".format(fish - 1))
 
-    elif hunger >= 0:
-        print("Somehow, you have survived at the brink of death. You vicously gobble down a fish, leaving you with {} left.".format(fish - 1))
+        elif hunger >= 0:
+            print("Somehow, you have survived at the brink of death. You vicously gobble down a fish, leaving you with {} left.".format(fish - 1))
 
-    print("\n")
+        print("")
 
     return zip
 
@@ -345,6 +398,7 @@ def map_displayer(stage, player,
         y -= 1
         x = 1
 
+## =====----------- Main Routine ----------=====
 def main():
     """Main Routine"""
     # Setup values to be used in current stage
@@ -356,14 +410,14 @@ def main():
     TILES = tile_set()
     class PlayerWin(Exception): pass
     class PlayerStarve(Exception): pass
-    fish = 4
+    fish = 1
     hunger = 6
     turn_number = 1
 
     # Menu
 
     # Intro
-    #intro() # Delete this to skip intro for now
+    intro() # Delete this to skip intro for now
     # Game Start
     try:
         playing = True
@@ -393,8 +447,8 @@ def main():
                         del player[-1]
                         
                 elif command[0] == 'fishing':
-                    print("Fishing time i havent actually developed this yet lol soz")
-                    
+                    fish = fishing_processor(player,stage_tiles,fish)
+                    turn = False
 
                 elif command[0] == 'eat':
                     unzip = replenishment_processor(fish,hunger)
