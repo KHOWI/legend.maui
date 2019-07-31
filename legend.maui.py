@@ -1,12 +1,12 @@
 ##
 #  The Legend of Maui
-#  V0.13
+#  V1.01
 ## =====----------- Color Module ----------=====
 import time
 import random
 import sys
 try: color = sys.stdout.shell
-except AttributeError: raise RuntimeError("Use IDLE")
+except AttributeError: raise RuntimeError("Use IDLE")   
 class PlayerWin(Exception): pass
         
 class PlayerStarve(Exception): pass
@@ -232,7 +232,10 @@ def fishing_processor(player,stage_tiles,fish):
     tile = stage_tiles.get("{0},{1}".format(player[0], player[1]), "ocean")
     if tile == "ocean":
         fish_check = random.randint(1,100)
-        if fish_check <= fish_chance:
+        if fish_check <= fish_chance - 40:
+            fish += 2
+            print("Wow! You managed to catch 2 fish with one hook! Tūmatauenga/Tangaroa must be blessing you. You give thanks. You now have {} fish.".format(fish))
+        elif fish_check <= fish_chance:
            fish += 1
            print("You caught a fish! You now have {0} fish.".format(fish))
         else:
@@ -244,7 +247,6 @@ def fishing_processor(player,stage_tiles,fish):
 def hunger_processor(turn,hunger):
     """Process hunger per turn"""
     hunger -= 1
-    death_chance = 30
 
     if hunger > 6:
         color.write("wait how","ERROR")
@@ -256,13 +258,22 @@ def hunger_processor(turn,hunger):
         color.write("You feel hungry. You should probably eat soon","ERROR")
     elif hunger == 1:
         color.write("The throes of hunger stab at your being as your strength leaves you. You should definitely eat something.","ERROR")
-##    elif hunger > 0:
-##        death_check = random.randint(0,100)
-##        if death_check <= death_chance * hunger
     print("")
     
     return hunger
 
+def starve_checker(hunger):
+    """Calculates the chance for a user to die"""
+    death_chance = -30
+    hunger -= 1
+    if (death_chance * hunger) > random.randint(1,100):
+        death = True
+    else:
+        color.write("Somehow, through divine intervention, you manage to survive though the pain, although you know that the end is near. You should definitely eat something.\n","ERROR")
+        death = False
+    return death
+    
+    
 def replenishment_processor(fish,hunger):
     """Processes the eating to fish to replenish hunger"""
     zip = []
@@ -374,9 +385,9 @@ def special_condition_checker(special_tiles,
 
 #  ------------------ Map Gen -----------------
 def map_displayer(stage, player,
-                  stage_tiles, TILES):
+                  stage_tiles, TILES, special_tiles):
     """Displays the map in the console"""
-    color.write("=============================================\n","STRING")  # Hard seperation to show that a new turn has begun
+    color.write("=============================================\n","BUILTIN")  # Hard seperation to show that a new turn has begun
     # Setup variables
     x = 1
     y = stage[1]
@@ -387,6 +398,10 @@ def map_displayer(stage, player,
         while x < stage[0]+1:
             if x == player_x and y == player_y:
                 color.write(TILES.get("player", "X"), "KEYWORD")
+            elif ("{0},{1}".format(x, y) in stage_tiles
+                  and "{0},{1}".format(x, y) in special_tiles):
+                tile = stage_tiles.get("{0},{1}".format(x, y), "ocean")
+                color.write(TILES[tile], "STRING")
             elif "{0},{1}".format(x, y) in stage_tiles:
                 tile = stage_tiles.get("{0},{1}".format(x, y), "ocean")
                 color.write(TILES[tile], "stderr")
@@ -413,6 +428,7 @@ def main():
     fish = 1
     hunger = 6
     turn_number = 1
+    #idle_counter = 0
 
     # Menu
 
@@ -422,7 +438,7 @@ def main():
     try:
         playing = True
         while playing:
-            map_displayer(stage,player, stage_tiles, TILES)
+            map_displayer(stage,player, stage_tiles, TILES,special)
             # Print status
             # Ask player for command
             turn = True
@@ -430,7 +446,6 @@ def main():
             while turn:
                 
                 command = command_processor()
-                # If player
                 if command[0] == 'movement':
                     player = movement_processor(stage, player, stage_tiles, command)
                     if player[2] == True:
@@ -445,6 +460,7 @@ def main():
                     else:
                         print("Something crititcal has occured within the movement processcer")
                         del player[-1]
+                    #idle_counter = 0
                         
                 elif command[0] == 'fishing':
                     fish = fishing_processor(player,stage_tiles,fish)
@@ -464,7 +480,8 @@ def main():
             #  Perform post turn actions
             hunger = hunger_processor(turn_number,hunger)
             if hunger == 0:
-                raise PlayerStarve
+                 if starve_checker(hunger) == True:
+                     raise PlayerStarve
             turn_number += 1
             
     except PlayerWin:
