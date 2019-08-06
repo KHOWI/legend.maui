@@ -1,6 +1,6 @@
 ##
 #  The Legend of Maui
-#  V1.02
+#  V1.03
 ## =====----------- Color Module ----------=====
 import time
 import random
@@ -106,14 +106,44 @@ def stage_1_generator(option):
     STAGE_1_TILES = {         
         "1,2":"rock",
         "1,3":"mountain",
+        "2,4":"rock",
+        "2,7":"rock",
+        "2,8":"rock",
         "3,3":"rock",
+        "3,4":"rock",
+        "3,8":"mountain",
+        "3,9":"rock",
+        "3,10":"rock",
+        "4,4":"rock",
         "4,5":"mountain",
-        "5,5":"end"
+        "5,6":"rock",
+        "6,1":"rock",
+        "6,2":"rock",
+        "6,7":"rock",
+        "6,10":"rock",
+        "7,1":"rock",
+        "7,2":"rock",
+        "7,6":"rock",
+        "7,10":"rock",
+        "8,5":"rock",
+        "8,6":"rock",
+        "8,10":"rock",
+        "9,3":"rock",
+        "9,4":"rock",
+        "9,9":"rock",
+        "9,10":"rock",
+        "10,8":"rock",
+        "10,9":"rock",
+        "10,10":"rock",
+        
+        "1,10":"end",
+        
+        
     }
 
     # Special Tiles that trigger an event
     STAGE_1_SPECIAL = {       
-        "5,5":"end"
+        "1,10":"end"
     }
 
     # Decide what data to return
@@ -174,6 +204,7 @@ def tutorial():
     fish = 1
     hunger = 6
 
+    print("Tutorial has been triggered!")
     # Introduction to Maui
     color.write("\nHaere Mai Māui-tikitiki-a-Taranga, Māui-pōtiki, divine descendant of Tama-nui-te-rā.\n"
       "Your future deeds are great and many, and now is the time to claim the title of Maui-te-whare-kino.\n"
@@ -202,7 +233,7 @@ Eating doesn't consume a turn, so afterwards keep moving up.""")
     elif turn_number == 6:
         color.write("To get more fish, enter a sentence containing 'Fishing' or something of the like. Give it a go!")
     elif turn_number == 7:
-        color.write("You're getting the hang of this. Just go towards the end now! Good luck!")
+        color.write("You're getting the hang of this. Just go towards the end now! Good luck! Enter 'h' or 'help' for more help!")
 
     print("")
 # ------------------ Map Gen Stage 1 -----------------
@@ -511,10 +542,19 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
         playing = True
         turn_number = 1
         while playing:
+            #  Pre-turn actions
+            hunger = hunger_processor(turn_number,hunger)
+            if hunger <= 0:
+                 if starve_checker(hunger) == True:
+                     raise PlayerStarve
+
             given_tutorial_tip = False
+
+            #  Turn start one-offs
             map_displayer(stage,player, stage_tiles, TILES,special)
             turn = True
             color.write("Turn {}\n".format(turn_number))
+            #  Commands start
             while turn:
                 if tutorial == "yes" and given_tutorial_tip == False:
                     tutorial_tips(turn_number)
@@ -569,12 +609,8 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                     print("Beep Boop")
 
             #  Perform post turn actions
-            hunger = hunger_processor(turn_number,hunger)
-            if hunger <= 0:
-                 if starve_checker(hunger) == True:
-                     raise PlayerStarve
             turn_number += 1
-            
+    #  Conditions            
     except PlayerWin:
         pass
     except PlayerStarve:
