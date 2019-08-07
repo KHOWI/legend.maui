@@ -26,7 +26,7 @@ def intro():
         time.sleep(1)
         color.write("The Legend of Māui!\n","ERROR")
         time.sleep(2)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt:    # Skip Intro
         pass
     color.write("""
                                                         
@@ -59,6 +59,7 @@ def intro_dots():
     print("")
 
 def ending(type):
+    """Determines the type of ending a user gets"""
     
     if type == "win":
         time.sleep(1)
@@ -94,7 +95,7 @@ def ending(type):
                       \_ _/\n""")
         color.write("You've fished up the North Island! Thanks for playing!","KEYWORD")
     elif type == "starve":
-        color.write("lol you starved to death")
+        color.write("lol you were hungry so you went home")
     exit()
 ## =====----------- Map Generation ----------=====
 def stage_1_generator(option):
@@ -137,8 +138,6 @@ def stage_1_generator(option):
         "10,10":"rock",
         
         "1,10":"end",
-        
-        
     }
 
     # Special Tiles that trigger an event
@@ -209,10 +208,12 @@ def tutorial():
     color.write("\nHaere Mai Māui-tikitiki-a-Taranga, Māui-pōtiki, divine descendant of Tama-nui-te-rā.\n"
       "Your future deeds are great and many, and now is the time to claim the title of Maui-te-whare-kino.\n"
       "Embark now, and discover the land of the long white cloud.\n\n")
+
     try:
         turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes")
     except KeyboardInterrupt:
         print("Tutorial has been skipped! Good Luck!")
+
     print("The tutorial has now ended. It's time to begin your journey!")
 
 def tutorial_tips(turn_number):
@@ -259,7 +260,7 @@ def stage_1():
     stage_tiles = stage_1_generator("tiles")
     special = stage_1_generator("special")                              
     fish = 1
-    hunger = 6
+    hunger = 7
 
     turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no")
     ending("win")
@@ -305,17 +306,17 @@ def command_processor():
                 command.append("eat")
                 validity += 1
         
-
         if validity > 1:
             print("Please type less keywords")
             validity = 0
         elif validity == 1:
             return command
         elif validity == 0:
-            print("PLEASE TYPE A KEYWORD")
+            print("Please enter a keyword. Enter help for instructions.")
 
 #  ------------------ Help -----------------
 def help_module():
+    """Starts the help module"""
     helping = True
     color.write("Hello! Welcome to the Legend of Maui!\n")
     while helping:
@@ -327,6 +328,7 @@ def help_module():
 {5} Terrain
 {6} Fishing
 Enter nothing to exit the help module""").lower().strip()
+
         if query == "":
             helping = False
         elif query == "1":
@@ -352,6 +354,7 @@ def fishing_processor(player,stage_tiles,fish):
     """Process fishing"""
     fish_chance = 50
     tile = stage_tiles.get("{0},{1}".format(player[0], player[1]), "ocean")
+
     if tile == "ocean":
         fish_check = random.randint(1,100)
         if fish_check <= fish_chance - 40:
@@ -388,6 +391,7 @@ def starve_checker(hunger):
     """Calculates the chance for a user to die"""
     death_chance = -30
     hunger -= 1
+
     if (death_chance * hunger) > random.randint(1,100):
         death = True
     else:
@@ -406,7 +410,7 @@ def replenishment_processor(fish,hunger):
         return zip
     else:
         zip.append(fish - 1)
-        zip.append(6)
+        zip.append(7) # Hunger to give back
 
         if hunger > 3:
             print("You eat a fish from your reserve, leaving you with {} left.".format(fish - 1))
