@@ -313,6 +313,27 @@ def command_processor():
             return command
         elif validity == 0:
             print("Please enter a keyword. Enter help for instructions.")
+        
+##def tutorial_conditions():
+##    if( tutorial == "yes"
+##        and turn_number < 4 
+##            and command[1] != " up "
+##                and command[1] != " u "
+##                    and command[1] != " north "):    
+##        color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
+##    elif(tutorial == "yes"
+##         and turn_number == 4
+##             and command[1] != " r "
+##                 and command[1] != " right "
+##                     and command[1] != " west"
+##                         and command[1] != " left "
+##                             and command[1] != " l "
+##                                 and command[1] != " east "):
+##        color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
+##    elif(tutorial == "yes"
+##         and turn_number == 5
+##             and hunger < 4):
+##         color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
 
 #  ------------------ Help -----------------
 def help_module():
@@ -564,53 +585,67 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                     tutorial_tips(turn_number)
                     given_tutorial_tip = True
                 command = command_processor()
-                if command[0] == 'movement':
-                    if( tutorial == "yes"
-                        and turn_number < 4 
-                            and command[1] != " up "
-                                and command[1] != " u "
-                                    and command[1] != " north "):
-                        
-                        color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
-                    elif(tutorial == "yes"
-                         and turn_number == 4
-                             and command[1] != " r "
-                                 and command[1] != " right "
-                                     and command[1] != " west"
-                                         and command[1] != " left "
-                                             and command[1] != " l "
-                                                 and command[1] != " east "):
-                        color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
-                    else:   
-                        player = movement_processor(stage, player, stage_tiles, command)
-                        if player[2] == True:
-                            update = special_condition_checker(special, player)
-                            if update == "end":
-                                raise PlayerWin
-                            turn = False
-                            del player[-1]
 
-                        elif player[2] == False:
-                            del player[-1]
-                        else:
-                            print("Something crititcal has occured within the movement processcer")
-                            del player[-1]
-                        #idle_counter = 0
-                        
-                elif command[0] == 'fishing':
-                    fish = fishing_processor(player,stage_tiles,fish)
-                    turn = False
-
-                elif command[0] == 'eat':
-                    unzip = replenishment_processor(fish,hunger)
-                    fish = unzip[0]
-                    hunger = unzip[1]
-
-                elif command[0] == 'help':
+                #  Tutorial Conditions start here
+                if command[0] == 'help':
                     help_module()
-                              
+
+                if( tutorial == "yes"
+                    and turn_number < 4 
+                        and command[1] != " up "
+                            and command[1] != " u "
+                                and command[1] != " north "):    
+                    color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
+                elif(tutorial == "yes"
+                     and turn_number == 4
+                         and command[1] != " r "
+                             and command[1] != " right "
+                                 and command[1] != " west"
+                                     and command[1] != " left "
+                                         and command[1] != " l "
+                                             and command[1] != " east "):
+                    color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
+                elif(tutorial == "yes"
+                     and turn_number == 5
+                         and hunger < 4
+                             and command[0] != 'eat'):
+                     color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
+                elif(tutorial =="yes"
+                     and turn_numer == 6
+                         and command[0] != 'fishing'):
+                    color.write("Hey! Now would be a good time to fish!")
                 else:
-                    print("Beep Boop")
+                    #  Tutorial Conditions end here
+
+                    if command[0] == 'movement':   
+                            player = movement_processor(stage, player, stage_tiles, command)
+                            if player[2] == True:
+                                update = special_condition_checker(special, player)
+                                if update == "end":
+                                    raise PlayerWin
+                                turn = False
+                                del player[-1]
+
+                            elif player[2] == False:
+                                del player[-1]
+                            else:
+                                print("Something crititcal has occured within the movement processcer")
+                                del player[-1]
+                            
+                    elif command[0] == 'fishing':
+                        fish = fishing_processor(player,stage_tiles,fish)
+                        turn = False
+
+                    elif command[0] == 'eat':
+                        unzip = replenishment_processor(fish,hunger)
+                        fish = unzip[0]
+                        hunger = unzip[1]
+                    else:
+                        print("Beep Boop")
+
+
+                              
+                
 
             #  Perform post turn actions
             turn_number += 1
