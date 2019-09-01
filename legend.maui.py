@@ -586,9 +586,9 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                     given_tutorial_tip = True
                 command = command_processor()
 
-                #  Tutorial Conditions start here
                 if command[0] == 'help':
                     help_module()
+                #  Tutorial Conditions start here
 
                 if( tutorial == "yes"
                     and turn_number < 4 
@@ -611,7 +611,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                              and command[0] != 'eat'):
                      color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
                 elif(tutorial =="yes"
-                     and turn_numer == 6
+                     and turn_number == 6
                          and command[0] != 'fishing'):
                     color.write("Hey! Now would be a good time to fish!")
                 else:
@@ -629,7 +629,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                             elif player[2] == False:
                                 del player[-1]
                             else:
-                                print("Something crititcal has occured within the movement processcer")
+                                print("Something critical has occured within the movement processcer")
                                 del player[-1]
                             
                     elif command[0] == 'fishing':
