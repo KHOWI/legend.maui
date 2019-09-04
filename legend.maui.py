@@ -8,7 +8,12 @@ import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")   
 class PlayerWin(Exception): pass
+<<<<<<< Updated upstream
 class PlayerCave(Exception): pass        
+=======
+class PlayerEnterCave(Exception): pass
+class PlayerLeaveCave(Exception): pass
+>>>>>>> Stashed changes
 class PlayerStarve(Exception): pass
 
 ## =====----------- Menu/Sequences ----------=====
@@ -29,7 +34,7 @@ def intro():
     except KeyboardInterrupt:    # Skip Intro
         pass
     color.write("""
-                                                        
+                          _________                              
      ______  _______          ____    ____   ____  ____ 
     |      \/       \    ____|\   \  |    | |    ||    |
    /          /\     \  /    /\    \ |    | |    ||    |
@@ -98,6 +103,20 @@ def ending(type):
         color.write("lol you were hungry so you went home")
     exit()
 ## =====----------- Map Generation ----------=====
+def tile_set():
+    """Contains the data for tiles"""
+    TILES = {
+        "ocean":"~"
+        ,"rock":"R"
+        ,"mountain":"M"
+        ,"player":"X"
+        ,"end":"E"
+        ,"npc":"I"
+        ,"cave":"O"
+        }
+
+    return TILES
+
 def stage_1_generator(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
     # Stage Size + Player Starting Position
@@ -128,6 +147,7 @@ def stage_1_generator(option):
         "7,10":"rock",
         "8,5":"rock",
         "8,6":"rock",
+        
         "8,10":"rock",
         "9,3":"rock",
         "9,4":"rock",
@@ -238,17 +258,6 @@ Eating doesn't consume a turn, so afterwards keep moving up.""")
 
     print("")
 # ------------------ Map Gen Stage 1 -----------------
-def tile_set():
-    """Contains the data for tiles"""
-    TILES = {
-        "ocean":"~"
-        ,"rock":"R"
-        ,"mountain":"M"
-        ,"player":"X"
-        ,"end":"E"
-        }
-
-    return TILES
 
 def stage_1():
     """Stage 1"""
@@ -571,8 +580,8 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
 
                 if command[0] == 'help':
                     help_module()
-                #  Tutorial Conditions start here
 
+                #  Tutorial Conditions start here
                 if( tutorial == "yes"
                     and turn_number < 4 
                         and command[1] != " up "
@@ -594,11 +603,26 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                              and command[0] != 'eat'):
                      color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
                 elif(tutorial =="yes"
+                     and turn_number == 5
+                         and hunger > 4
+                            and command[1] != " up "
+                                and command[1] != " u "
+                                    and command[1] != " north "):
+                    color.write("Now that you're full, let's continue moving up!\n\n", "ERROR")
+                elif(tutorial =="yes"
                      and turn_number == 6
                          and command[0] != 'fishing'):
                     color.write("Hey! Now would be a good time to fish!")
+                elif(tutorial =="yes"
+                     and turn_number ==6
+                         and command[0] == 'fishing'):
+                    fish += 1
+                    print("You caught a fish! You now have {0} fish.".format(fish))
+                    turn = False
+                    pass
+
+                #  Tutorial Conditions end here
                 else:
-                    #  Tutorial Conditions end here
 
                     if command[0] == 'movement':   
                             player = movement_processor(stage, player, stage_tiles, command)
@@ -625,10 +649,6 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                     else:
                         print("Beep Boop")
 
-
-                              
-                
-
             #  Perform post turn actions
             turn_number += 1
     #  Conditions            
@@ -636,6 +656,10 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
         pass
     except PlayerStarve:
         ending("starve")
+    except PlayerLeaveCave or PlayerEnterCave:
+        # Order should be [Fish, Hunger, Items, Turn]
+        stats = [fish, hunger, turn_number]
+        return stats
     except KeyboardInterrupt:
         return KeyboardInterrupt
     except:
