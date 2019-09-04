@@ -1,6 +1,6 @@
 ##
 #  The Legend of Maui
-#  V1.02
+#  V1.03
 ## =====----------- Color Module ----------=====
 import time
 import random
@@ -8,7 +8,8 @@ import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")   
 class PlayerWin(Exception): pass
-        
+class PlayerEnterCave(Exception): pass
+class PlayerLeaveCave(Exception): pass
 class PlayerStarve(Exception): pass
 
 ## =====----------- Menu/Sequences ----------=====
@@ -26,10 +27,10 @@ def intro():
         time.sleep(1)
         color.write("The Legend of Māui!\n","ERROR")
         time.sleep(2)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt:    # Skip Intro
         pass
     color.write("""
-                                                        
+                          _________                              
      ______  _______          ____    ____   ____  ____ 
     |      \/       \    ____|\   \  |    | |    ||    |
    /          /\     \  /    /\    \ |    | |    ||    |
@@ -59,6 +60,7 @@ def intro_dots():
     print("")
 
 def ending(type):
+    """Determines the type of ending a user gets"""
     
     if type == "win":
         time.sleep(1)
@@ -94,9 +96,23 @@ def ending(type):
                       \_ _/\n""")
         color.write("You've fished up the North Island! Thanks for playing!","KEYWORD")
     elif type == "starve":
-        color.write("lol you starved to death")
+        color.write("lol you were hungry so you went home")
     exit()
 ## =====----------- Map Generation ----------=====
+def tile_set():
+    """Contains the data for tiles"""
+    TILES = {
+        "ocean":"~"
+        ,"rock":"R"
+        ,"mountain":"M"
+        ,"player":"X"
+        ,"end":"E"
+        ,"npc":"I"
+        ,"cave":"O"
+        }
+
+    return TILES
+
 def stage_1_generator(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
     # Stage Size + Player Starting Position
@@ -106,14 +122,43 @@ def stage_1_generator(option):
     STAGE_1_TILES = {         
         "1,2":"rock",
         "1,3":"mountain",
+        "2,4":"rock",
+        "2,7":"rock",
+        "2,8":"rock",
         "3,3":"rock",
+        "3,4":"rock",
+        "3,8":"mountain",
+        "3,9":"rock",
+        "3,10":"rock",
+        "4,4":"rock",
         "4,5":"mountain",
-        "5,5":"end"
+        "5,6":"rock",
+        "6,1":"rock",
+        "6,2":"rock",
+        "6,7":"rock",
+        "6,10":"rock",
+        "7,1":"rock",
+        "7,2":"rock",
+        "7,6":"rock",
+        "7,10":"rock",
+        "8,5":"rock",
+        "8,6":"rock",
+        
+        "8,10":"rock",
+        "9,3":"rock",
+        "9,4":"rock",
+        "9,9":"rock",
+        "9,10":"rock",
+        "10,8":"rock",
+        "10,9":"rock",
+        "10,10":"rock",
+        
+        "1,10":"end",
     }
 
     # Special Tiles that trigger an event
     STAGE_1_SPECIAL = {       
-        "5,5":"end"
+        "1,10":"end"
     }
 
     # Decide what data to return
@@ -174,14 +219,17 @@ def tutorial():
     fish = 1
     hunger = 6
 
+    print("Tutorial has been triggered!")
     # Introduction to Maui
     color.write("\nHaere Mai Māui-tikitiki-a-Taranga, Māui-pōtiki, divine descendant of Tama-nui-te-rā.\n"
       "Your future deeds are great and many, and now is the time to claim the title of Maui-te-whare-kino.\n"
       "Embark now, and discover the land of the long white cloud.\n\n")
+
     try:
         turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes")
     except KeyboardInterrupt:
         print("Tutorial has been skipped! Good Luck!")
+
     print("The tutorial has now ended. It's time to begin your journey!")
 
 def tutorial_tips(turn_number):
@@ -202,21 +250,10 @@ Eating doesn't consume a turn, so afterwards keep moving up.""")
     elif turn_number == 6:
         color.write("To get more fish, enter a sentence containing 'Fishing' or something of the like. Give it a go!")
     elif turn_number == 7:
-        color.write("You're getting the hang of this. Just go towards the end now! Good luck!")
+        color.write("You're getting the hang of this. Just go towards the end now! Good luck! Enter 'h' or 'help' for more help!")
 
     print("")
 # ------------------ Map Gen Stage 1 -----------------
-def tile_set():
-    """Contains the data for tiles"""
-    TILES = {
-        "ocean":"~"
-        ,"rock":"R"
-        ,"mountain":"M"
-        ,"player":"X"
-        ,"end":"E"
-        }
-
-    return TILES
 
 def stage_1():
     """Stage 1"""
@@ -228,7 +265,7 @@ def stage_1():
     stage_tiles = stage_1_generator("tiles")
     special = stage_1_generator("special")                              
     fish = 1
-    hunger = 6
+    hunger = 7
 
     turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no")
     ending("win")
@@ -274,17 +311,38 @@ def command_processor():
                 command.append("eat")
                 validity += 1
         
-
         if validity > 1:
             print("Please type less keywords")
             validity = 0
         elif validity == 1:
             return command
         elif validity == 0:
-            print("PLEASE TYPE A KEYWORD")
+            print("Please enter a keyword. Enter help for instructions.")
+        
+##def tutorial_conditions():
+##    if( tutorial == "yes"
+##        and turn_number < 4 
+##            and command[1] != " up "
+##                and command[1] != " u "
+##                    and command[1] != " north "):    
+##        color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
+##    elif(tutorial == "yes"
+##         and turn_number == 4
+##             and command[1] != " r "
+##                 and command[1] != " right "
+##                     and command[1] != " west"
+##                         and command[1] != " left "
+##                             and command[1] != " l "
+##                                 and command[1] != " east "):
+##        color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
+##    elif(tutorial == "yes"
+##         and turn_number == 5
+##             and hunger < 4):
+##         color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
 
 #  ------------------ Help -----------------
 def help_module():
+    """Starts the help module"""
     helping = True
     color.write("Hello! Welcome to the Legend of Maui!\n")
     while helping:
@@ -296,6 +354,7 @@ def help_module():
 {5} Terrain
 {6} Fishing
 Enter nothing to exit the help module""").lower().strip()
+
         if query == "":
             helping = False
         elif query == "1":
@@ -321,6 +380,7 @@ def fishing_processor(player,stage_tiles,fish):
     """Process fishing"""
     fish_chance = 50
     tile = stage_tiles.get("{0},{1}".format(player[0], player[1]), "ocean")
+
     if tile == "ocean":
         fish_check = random.randint(1,100)
         if fish_check <= fish_chance - 40:
@@ -357,6 +417,7 @@ def starve_checker(hunger):
     """Calculates the chance for a user to die"""
     death_chance = -30
     hunger -= 1
+
     if (death_chance * hunger) > random.randint(1,100):
         death = True
     else:
@@ -375,7 +436,7 @@ def replenishment_processor(fish,hunger):
         return zip
     else:
         zip.append(fish - 1)
-        zip.append(6)
+        zip.append(7) # Hunger to give back
 
         if hunger > 3:
             print("You eat a fish from your reserve, leaving you with {} left.".format(fish - 1))
@@ -511,74 +572,108 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
         playing = True
         turn_number = 1
         while playing:
+            #  Pre-turn actions
+            hunger = hunger_processor(turn_number,hunger)
+            if hunger <= 0:
+                 if starve_checker(hunger) == True:
+                     raise PlayerStarve
+
             given_tutorial_tip = False
+
+            #  Turn start one-offs
             map_displayer(stage,player, stage_tiles, TILES,special)
             turn = True
             color.write("Turn {}\n".format(turn_number))
+            #  Commands start
             while turn:
                 if tutorial == "yes" and given_tutorial_tip == False:
                     tutorial_tips(turn_number)
                     given_tutorial_tip = True
                 command = command_processor()
-                if command[0] == 'movement':
-                    if( tutorial == "yes"
-                        and turn_number < 4 
+
+                if command[0] == 'help':
+                    help_module()
+
+                #  Tutorial Conditions start here
+                if( tutorial == "yes"
+                    and turn_number < 4 
+                        and command[1] != " up "
+                            and command[1] != " u "
+                                and command[1] != " north "):    
+                    color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
+                elif(tutorial == "yes"
+                     and turn_number == 4
+                         and command[1] != " r "
+                             and command[1] != " right "
+                                 and command[1] != " west"
+                                     and command[1] != " left "
+                                         and command[1] != " l "
+                                             and command[1] != " east "):
+                    color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
+                elif(tutorial == "yes"
+                     and turn_number == 5
+                         and hunger < 4
+                             and command[0] != 'eat'):
+                     color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
+                elif(tutorial =="yes"
+                     and turn_number == 5
+                         and hunger > 4
                             and command[1] != " up "
                                 and command[1] != " u "
                                     and command[1] != " north "):
-                        
-                        color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
-                    elif(tutorial == "yes"
-                         and turn_number == 4
-                             and command[1] != " r "
-                                 and command[1] != " right "
-                                     and command[1] != " west"
-                                         and command[1] != " left "
-                                             and command[1] != " l "
-                                                 and command[1] != " east "):
-                        color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
-                    else:   
-                        player = movement_processor(stage, player, stage_tiles, command)
-                        if player[2] == True:
-                            update = special_condition_checker(special, player)
-                            if update == "end":
-                                raise PlayerWin
-                            turn = False
-                            del player[-1]
-
-                        elif player[2] == False:
-                            del player[-1]
-                        else:
-                            print("Something crititcal has occured within the movement processcer")
-                            del player[-1]
-                        #idle_counter = 0
-                        
-                elif command[0] == 'fishing':
-                    fish = fishing_processor(player,stage_tiles,fish)
+                    color.write("Now that you're full, let's continue moving up!\n\n", "ERROR")
+                elif(tutorial =="yes"
+                     and turn_number == 6
+                         and command[0] != 'fishing'):
+                    color.write("Hey! Now would be a good time to fish!")
+                elif(tutorial =="yes"
+                     and turn_number ==6
+                         and command[0] == 'fishing'):
+                    fish += 1
+                    print("You caught a fish! You now have {0} fish.".format(fish))
                     turn = False
+                    pass
 
-                elif command[0] == 'eat':
-                    unzip = replenishment_processor(fish,hunger)
-                    fish = unzip[0]
-                    hunger = unzip[1]
-
-                elif command[0] == 'help':
-                    help_module()
-                              
+                #  Tutorial Conditions end here
                 else:
-                    print("Beep Boop")
+
+                    if command[0] == 'movement':   
+                            player = movement_processor(stage, player, stage_tiles, command)
+                            if player[2] == True:
+                                update = special_condition_checker(special, player)
+                                if update == "end":
+                                    raise PlayerWin
+                                turn = False
+                                del player[-1]
+
+                            elif player[2] == False:
+                                del player[-1]
+                            else:
+                                print("Something critical has occured within the movement processcer")
+                                del player[-1]
+                            
+                    elif command[0] == 'fishing':
+                        fish = fishing_processor(player,stage_tiles,fish)
+                        turn = False
+
+                    elif command[0] == 'eat':
+                        unzip = replenishment_processor(fish,hunger)
+                        fish = unzip[0]
+                        hunger = unzip[1]
+                    else:
+                        print("Beep Boop")
 
             #  Perform post turn actions
-            hunger = hunger_processor(turn_number,hunger)
-            if hunger <= 0:
-                 if starve_checker(hunger) == True:
-                     raise PlayerStarve
             turn_number += 1
-            
+    #  Conditions            
     except PlayerWin:
         pass
     except PlayerStarve:
         ending("starve")
+    except PlayerLeaveCave or PlayerEnterCave:
+        # Order should be [Fish, Hunger, Items, Turn]
+        stats = [fish, hunger, turn_number]
+        return stats
     except KeyboardInterrupt:
         return KeyboardInterrupt
     except:
