@@ -1,6 +1,6 @@
 ##
 #  The Legend of Maui
-#  V1.03
+#  V1.04
 ## =====----------- Color Module ----------=====
 import time
 import random
@@ -8,7 +8,7 @@ import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")   
 class PlayerWin(Exception): pass
-        
+class PlayerCave(Exception): pass        
 class PlayerStarve(Exception): pass
 
 ## =====----------- Menu/Sequences ----------=====
@@ -105,8 +105,8 @@ def stage_1_generator(option):
 
     # Non-Ocean tiles
     STAGE_1_TILES = {         
-        "1,2":"rock",
-        "1,3":"mountain",
+        #"1,2":"rock",
+        #"1,3":"mountain",
         "2,4":"rock",
         "2,7":"rock",
         "2,8":"rock",
@@ -314,27 +314,6 @@ def command_processor():
         elif validity == 0:
             print("Please enter a keyword. Enter help for instructions.")
         
-##def tutorial_conditions():
-##    if( tutorial == "yes"
-##        and turn_number < 4 
-##            and command[1] != " up "
-##                and command[1] != " u "
-##                    and command[1] != " north "):    
-##        color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
-##    elif(tutorial == "yes"
-##         and turn_number == 4
-##             and command[1] != " r "
-##                 and command[1] != " right "
-##                     and command[1] != " west"
-##                         and command[1] != " left "
-##                             and command[1] != " l "
-##                                 and command[1] != " east "):
-##        color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
-##    elif(tutorial == "yes"
-##         and turn_number == 5
-##             and hunger < 4):
-##         color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
-
 #  ------------------ Help -----------------
 def help_module():
     """Starts the help module"""
@@ -524,7 +503,11 @@ def special_condition_checker(special_tiles,
     if tile == None: # If theres no special condition on that tile
         return
     elif tile == "end":
+        raise PlayerWin
+    elif tile == "shop":
         return tile
+    elif tile == "cave":
+        raise PlayerCave
 
     
     
@@ -621,8 +604,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                             player = movement_processor(stage, player, stage_tiles, command)
                             if player[2] == True:
                                 update = special_condition_checker(special, player)
-                                if update == "end":
-                                    raise PlayerWin
+
                                 turn = False
                                 del player[-1]
 
