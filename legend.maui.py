@@ -8,12 +8,8 @@ import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")   
 class PlayerWin(Exception): pass
-<<<<<<< Updated upstream
-class PlayerCave(Exception): pass        
-=======
-class PlayerEnterCave(Exception): pass
-class PlayerLeaveCave(Exception): pass
->>>>>>> Stashed changes
+class PlayerCaveEnter(Exception): pass
+class PlayerCaveLeave(Exception): pass
 class PlayerStarve(Exception): pass
 
 ## =====----------- Menu/Sequences ----------=====
@@ -112,7 +108,8 @@ def tile_set():
         ,"player":"X"
         ,"end":"E"
         ,"npc":"I"
-        ,"cave":"O"
+        ,"cave":"C"
+        ,"dirt":"+"
         }
 
     return TILES
@@ -124,8 +121,9 @@ def stage_1_generator(option):
 
     # Non-Ocean tiles
     STAGE_1_TILES = {         
-        #"1,2":"rock",
-        #"1,3":"mountain",
+        "1,2":"rock",
+        "1,3":"mountain",
+        "2,2":"cave",
         "2,4":"rock",
         "2,7":"rock",
         "2,8":"rock",
@@ -162,7 +160,8 @@ def stage_1_generator(option):
 
     # Special Tiles that trigger an event
     STAGE_1_SPECIAL = {       
-        "1,10":"end"
+        "1,10":"end",
+        "2,2":"cave"
     }
 
     # Decide what data to return
@@ -174,6 +173,32 @@ def stage_1_generator(option):
         return STAGE_1_SPECIAL
     else:
         print("Something Broke! map_generator_1")
+
+def cave_generator(option):
+    """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
+    # Stage Size + Player Starting Position
+    CAVE = ([10,10], [1,1])
+
+    # Non-Ocean tiles
+    CAVE_TILES = {         
+
+        "1,10":"end",
+    }
+
+    # Special Tiles that trigger an event
+    CAVE_SPECIAL = {       
+        "1,10":"end"
+    }
+
+    # Decide what data to return
+    if option == "stage":
+        return CAVE
+    elif option == "tiles":
+        return CAVE_TILES
+    elif option == "special":
+        return CAVE_SPECIAL
+    else:
+        print("Something Broke! CAVE")
 
 def tutorial_generator(option):
     """Generates the stage should go in format [Stage Size] [Player Starting Position]"""
@@ -222,6 +247,7 @@ def tutorial():
     special = tutorial_generator("special")
     fish = 1
     hunger = 6
+    turn_number = 1
 
     print("Tutorial has been triggered!")
     # Introduction to Maui
@@ -230,7 +256,7 @@ def tutorial():
       "Embark now, and discover the land of the long white cloud.\n\n")
 
     try:
-        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes")
+        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes",turn_number,"ocean")
     except KeyboardInterrupt:
         print("Tutorial has been skipped! Good Luck!")
 
@@ -259,21 +285,33 @@ Eating doesn't consume a turn, so afterwards keep moving up.""")
     print("")
 # ------------------ Map Gen Stage 1 -----------------
 
-def stage_1():
+def stage_1(player, fish, hunger, turn_number):
     """Stage 1"""
     # Setup values to be used in current stage
     TILES = tile_set()
     stage = stage_1_generator("stage")
-    player = stage[1]
     stage = stage[0]
     stage_tiles = stage_1_generator("tiles")
     special = stage_1_generator("special")                              
-    fish = 1
-    hunger = 7
+    default_tile = "ocean"
+    
+    stats = turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no", turn_number,"ocean")
+    return stats
 
-    turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no")
-    ending("win")
+# ------------------ Map Gen Cave -----------------
 
+def cave(player, fish, hunger, turn_number):
+    """Cave"""
+    # Setup values to be used in current stage
+    TILES = tile_set()
+    stage = cave_generator("stage")
+    stage = stage[0]
+    stage_tiles = cave_generator("tiles")
+    special = cave_generator("special")
+    default_tile = "dirt"
+
+    turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no",turn_number,"dirt")
+6
 ## =====----------- Turn Mechanics ----------=====
 
 #  ------------------ Turn Processing -----------------
@@ -359,12 +397,12 @@ Enter nothing to exit the help module""").lower().strip()
           
         
 #  ------------------ Fishing/Hunger -----------------
-def fishing_processor(player,stage_tiles,fish):
+def fishing_processor(player,stage_tiles,fish,default_tile):
     """Process fishing"""
     fish_chance = 50
     tile = stage_tiles.get("{0},{1}".format(player[0], player[1]), "ocean")
 
-    if tile == "ocean":
+    if default_tile == "ocean":
         fish_check = random.randint(1,100)
         if fish_check <= fish_chance - 40:
             fish += 2
@@ -516,7 +554,7 @@ def special_condition_checker(special_tiles,
     elif tile == "shop":
         return tile
     elif tile == "cave":
-        raise PlayerCave
+        raise PlayerCaveEnter
 
     
     
@@ -524,7 +562,7 @@ def special_condition_checker(special_tiles,
 
 #  ------------------ Map Gen -----------------
 def map_displayer(stage, player,
-                  stage_tiles, TILES, special_tiles):
+                  stage_tiles, TILES, special_tiles, default_tile):
     """Displays the map in the console"""
     color.write("=============================================\n","BUILTIN")  # Hard seperation to show that a new turn has begun
     # Setup variables
@@ -539,13 +577,13 @@ def map_displayer(stage, player,
                 color.write(TILES.get("player", "X"), "KEYWORD")
             elif ("{0},{1}".format(x, y) in stage_tiles
                   and "{0},{1}".format(x, y) in special_tiles):
-                tile = stage_tiles.get("{0},{1}".format(x, y), "ocean")
+                tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
                 color.write(TILES[tile], "STRING")
             elif "{0},{1}".format(x, y) in stage_tiles:
-                tile = stage_tiles.get("{0},{1}".format(x, y), "ocean")
+                tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
                 color.write(TILES[tile], "stderr")
             else:
-                print(TILES["ocean"], end='')
+                print(TILES[default_tile], end='')
             x += 1
             print(" ",end='')
         print("")
@@ -553,11 +591,10 @@ def map_displayer(stage, player,
         x = 1
 
 ## =====----------- Turn ----------=====
-def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
+def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number, default_tile):
     """A turn"""
     try:
         playing = True
-        turn_number = 1
         while playing:
             #  Pre-turn actions
             hunger = hunger_processor(turn_number,hunger)
@@ -568,7 +605,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
             given_tutorial_tip = False
 
             #  Turn start one-offs
-            map_displayer(stage,player, stage_tiles, TILES,special)
+            map_displayer(stage,player, stage_tiles, TILES,special, default_tile)
             turn = True
             color.write("Turn {}\n".format(turn_number))
             #  Commands start
@@ -628,7 +665,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                             player = movement_processor(stage, player, stage_tiles, command)
                             if player[2] == True:
                                 update = special_condition_checker(special, player)
-
+                                
                                 turn = False
                                 del player[-1]
 
@@ -639,8 +676,11 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
                                 del player[-1]
                             
                     elif command[0] == 'fishing':
-                        fish = fishing_processor(player,stage_tiles,fish)
-                        turn = False
+                        if default_tile == "ocean":
+                            fish = fishing_processor(player,stage_tiles,fish,default_tile)
+                            turn = False
+                        else:
+                            print("You can't fish here!")
 
                     elif command[0] == 'eat':
                         unzip = replenishment_processor(fish,hunger)
@@ -656,14 +696,20 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial):
         pass
     except PlayerStarve:
         ending("starve")
-    except PlayerLeaveCave or PlayerEnterCave:
+    except PlayerCaveEnter:
         # Order should be [Fish, Hunger, Items, Turn]
         stats = [fish, hunger, turn_number]
+        print(stats)
+        return stats
+    except PlayerCaveLeave:
+        # Order should be [Fish, Hunger, Items, Turn]
+        stats = [fish, hunger, turn_number]
+        print(stats)
         return stats
     except KeyboardInterrupt:
         return KeyboardInterrupt
-    except:
-        print("Something broke in the turn")
+##    except:
+##        print("Something broke in the turn")
 ## =====----------- Routines ----------=====
 
 
@@ -678,6 +724,28 @@ def main():
     else:
         tutorial()
 
-    stage_1()
-
+    save_file = False
+    if save_file == True:
+        stats = save_file
+    else:
+        stats = [1,7,1]
+    
+    stage = stage_1_generator("stage")
+    player = stage[1]
+    
+    stats = stage_1(player, stats[0], stats[1], stats[2])
+    print(stats)
+    stage = cave_generator("stage")
+    player = stage[1]
+    cave(player, stats[0], stats[1], stats[2])
 main()
+
+
+
+
+
+
+
+
+
+
