@@ -165,7 +165,7 @@ def stage_1_generator(option):
     # Special Tiles that trigger an event
     STAGE_1_SPECIAL = {       
         "1,10":"end",
-        "1,10":"cave_entrance_1",
+        "10,1":"cave_entrance_1",
         "10,4":"cave_entrance_2"
     }
 
@@ -316,7 +316,7 @@ def tutorial_tips(turn_number):
     elif turn_number == 2:
         color.write("Great job! In this game, M stands for mountain, and R stands for rock. You're the X, and your goal is the E.")
     elif turn_number == 3:
-        color.write("Ignore the hunger for now, you're doing fine! Just keep moving.")
+        color.write("Did you know, you can type the intials of some actions to trigger them? Try typing 'u'!")
     elif turn_number == 4:
         color.write("""Right! Now that there's a rock in front of you, you can't go up anymore. (Try it out if you want!)
 Instead, try typing a sentence containing the words left/right.""")
@@ -326,7 +326,7 @@ Eating doesn't consume a turn, so afterwards keep moving up.""")
     elif turn_number == 6:
         color.write("To get more fish, enter a sentence containing 'Fishing' or something of the like. Give it a go!")
     elif turn_number == 7:
-        color.write("You're getting the hang of this. Just go towards the end now! Good luck! Enter 'h' or 'help' for more help!")
+        color.write("You're getting the hang of this. Keep in mind, you can only fish on Ocean tiles (~). \nJust go towards the end now! Good luck! Enter 'h' or 'help' for more help!")
 
     print("")
 # ------------------ Map Gen Stage 1 -----------------
