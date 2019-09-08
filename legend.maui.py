@@ -1,6 +1,6 @@
 ##
 #  The Legend of Maui
-#  V1.04
+#  V1.05
 ## =====----------- Color Module ----------=====
 import time
 import random
@@ -13,6 +13,7 @@ class PlayerCaveEnter2(Exception): pass
 class PlayerCaveLeave1(Exception): pass
 class PlayerCaveLeave2(Exception): pass
 class PlayerStarve(Exception): pass
+class TutorialEnd(Exception): pass
 
 ## =====----------- Menu/Sequences ----------=====
 def intro():
@@ -268,7 +269,7 @@ def tutorial_generator(option):
 
     # Special Tiles that trigger an event
     TUTORIAL_SPECIAL = {       
-        "2,9":"end"
+        "2,9":"tutorial_end"
     }
 
     # Decide what data to return
@@ -610,6 +611,8 @@ def special_condition_checker(special_tiles,
         raise PlayerCaveLeave1
     elif tile == "cave_exit_2":
         raise PlayerCaveLeave2
+    elif tile == "tutorial_end":
+        raise TutorialEnd
 
     
     
@@ -769,6 +772,8 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
         stage = stage_1_generator("stage")
         stats = ["stage_1",[10,4], fish, hunger, turn_number]
         return stats
+    except TutorialEnd:
+        pass
     except KeyboardInterrupt:
         return KeyboardInterrupt
 
