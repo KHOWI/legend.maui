@@ -7,6 +7,8 @@ import random
 import sys
 try: color = sys.stdout.shell
 except AttributeError: raise RuntimeError("Use IDLE")   
+
+
 class PlayerWin(Exception): pass
 class PlayerCaveEnter1(Exception): pass
 class PlayerCaveEnter2(Exception): pass
@@ -16,41 +18,77 @@ class PlayerStarve(Exception): pass
 class TutorialEnd(Exception): pass
 
 ## =====----------- Menu/Sequences ----------=====
-def intro():
+def intro(type):
     """Intro Sequence"""
-    try:
-        color.write("A new dawn breaks the crest of the sea")
-        intro_dots()
-        color.write("The mighty sea beckons, and from the depths a new hero arises")
-        intro_dots()
-        color.write("Now is the time of man, and your people need a land in which to thrive")
-        intro_dots()
-        color.write("Awaken, and discover Aotearoa as you begin")
-        intro_dots()
-        time.sleep(1)
-        color.write("The Legend of Māui!\n","ERROR")
-        time.sleep(2)
-    except KeyboardInterrupt:    # Skip Intro
-        pass
-    color.write("""
-                          _________                              
-     ______  _______          ____    ____   ____  ____ 
-    |      \/       \    ____|\   \  |    | |    ||    |
-   /          /\     \  /    /\    \ |    | |    ||    |
-  /     /\   / /\     ||    |  |    ||    | |    ||    |
- /     /\ \_/ / /    /||    |__|    ||    | |    ||    |
-|     |  \|_|/ /    / ||    .--.    ||    \_/    ||    |
-|     |       |    |  ||    |  |    ||           ||    |
-|\____\       |____|  /|____|  |____||\__________||____|
-| |    |      |    | / |    |  |    || |         ||    |
- \|____|      |____|/  |____|  |____| \|_________||____|
-    \(          )/       \(      )/      \(   )/    \(  
-     '          '         '      '        '   '      '  
-                                                        
-\n""")
-    time.sleep(0.5)
-    color.write("                 Press ENTER to begin!","KEYWORD")
-    input()
+    if type == "opening":
+        try:
+            print("Ctrl + C to skip!")
+            slow_print("A new dawn breaks the crest of the sea")
+            intro_dots()
+            slow_print("The mighty sea beckons, and from the depths a new hero arises")
+            intro_dots()
+            slow_print("Now is the time of man, and your people need a land in which to thrive")
+            intro_dots()
+            slow_print("Awaken, and discover Aotearoa as you begin",)
+            intro_dots()
+            time.sleep(1)
+            slow_print("The Legend of Māui!~","ERROR")
+            time.sleep(2)
+        except KeyboardInterrupt:    # Skip Intro
+            pass
+        color.write("""
+                              _________                              
+         ______  _______          ____    ____   ____  ____ 
+        |      \/       \    ____|\   \  |    | |    ||    |
+       /          /\     \  /    /\    \ |    | |    ||    |
+      /     /\   / /\     ||    |  |    ||    | |    ||    |
+     /     /\ \_/ / /    /||    |__|    ||    | |    ||    |
+    |     |  \|_|/ /    / ||    .--.    ||    \_/    ||    |
+    |     |       |    |  ||    |  |    ||           ||    |
+    |\____\       |____|  /|____|  |____||\__________||____|
+    | |    |      |    | / |    |  |    || |         ||    |
+     \|____|      |____|/  |____|  |____| \|_________||____|
+        \(          )/       \(      )/      \(   )/    \(  
+         '          '         '      '        '   '      '  
+                                                            
+    \n""")
+        time.sleep(0.5)
+        color.write("                 Press ENTER to begin!","KEYWORD")
+        input()
+    elif type == "stage_1":
+        try:
+            print("Ctrl + C to skip!")
+            intro_dots()
+            slow_print("My brothers")
+            intro_dots()
+            slow_print("They plan to leave for the high seas to fish without me")
+            intro_dots()
+            slow_print("They think me not capable, they despise me, and so they exclude me")
+            intro_dots()
+            slow_print("Ha")
+            intro_dots()
+            slow_print("Ahahaha")
+            intro_dots()
+            slow_print("I will show them.~")
+            time.sleep(1.5)
+            slow_print("I will show them that Māui-pōtiki is the greatest of all!~","ERROR")
+            time.sleep(1)
+            slow_print("I will sail for the great caves where my grandma resides, and I shall ask for a boon.~")
+            time.sleep(1)
+            slow_print("I will follow the ⋆ of Tangaroa, to find the best spot to fish.~")
+            time.sleep(1)
+            slow_print("I, Māui, will fish up the greatest catch of all! This will be,","ERROR")
+            time.sleep(2)
+            slow_print(" my legend.~~","ERROR")
+            time.sleep(3.5)
+            slow_print("Press ENTER to begin.","KEYWORD")
+            input()
+            
+        except KeyboardInterrupt:
+            pass
+        
+                   
+        
 
 def intro_dots():
     """Prints the dots in the intro sequence"""
@@ -58,9 +96,29 @@ def intro_dots():
     time.sleep(0.6)
     while i != 3:
         color.write(".")
-        time.sleep(0.6)
+        time.sleep(0.3)
         i += 1
     print("")
+
+def slow_print(text,color_choice = None):
+    for letter in text:
+        if letter == "~":
+            color.write("\n")
+        elif color_choice == None:
+            color.write(letter)
+        else:
+            color.write(letter,color_choice)
+        time.sleep(0.01)
+
+def fast_print(text,color_choice = None):
+    for letter in text:
+        if letter == "~":
+            color.write("\n")
+        elif color_choice == None:
+            color.write(letter)
+        else:
+            color.write(letter,color_choice)
+        time.sleep(0.005)
 
 def ending(type):
     """Determines the type of ending a user gets"""
@@ -489,7 +547,7 @@ def starve_checker(hunger):
     death_chance = -30
     hunger -= 1
 
-    if (death_chance * hunger) > random.randint(1,100):
+    if (death_chance * (hunger-1)) > random.randint(1,100):
         death = True
     else:
         color.write("Somehow, through divine intervention, you manage to survive though the pain, although you know that the end is near. You should definitely eat something.\n","ERROR")
@@ -632,7 +690,7 @@ def map_displayer(stage, player,
     while y > 0:
         while x < stage[0]+1:
             if x == player_x and y == player_y:
-                color.write(TILES.get("player", "X"), "KEYWORD")
+                color.write(TILES.get("player", "X"), "hit")
             elif ("{0},{1}".format(x, y) in stage_tiles
                   and "{0},{1}".format(x, y) in special_tiles):
                 tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
@@ -783,7 +841,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
 def main():
     """Main Routine"""
     
-    intro()
+    intro("opening")
     
     start_tutorial = input("Would you like to play the tutorial?").lower().strip()
     if start_tutorial == "no" or start_tutorial == "n":
@@ -797,7 +855,8 @@ def main():
     else:
         stage = stage_1_generator("stage")
         stats = ["stage_1",stage[1],1,7,0]  # [Stage, Player, Fish, Hunger, Turn, Item]
-    
+
+    intro("stage_1")
     while True:
     
         if stats[0] == "stage_1":
