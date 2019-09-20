@@ -902,7 +902,7 @@ def main():
         stats = save_file
     else:
         stage = stage_1_generator("stage")
-        stats = ["cave",[8,8],1,7,0,
+        stats = ["stage_1",stage[1],1,7,0,
                  {"legend_rod":False,
                   "rock_smasher":False,
                   }]  # [Stage, Player, Fish, Hunger, Turn, Item]
