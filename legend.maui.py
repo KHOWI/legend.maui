@@ -167,10 +167,11 @@ def tile_set():
         ,"rock":"R"
         ,"mountain":"M"
         ,"player":"X"
-        ,"end":"E"
+        ,"end":"⋆"
         ,"npc":"I"
         ,"cave":"C"
         ,"dirt":"+"
+        ,"sign":"!"
         }
 
     return TILES
@@ -207,6 +208,7 @@ def stage_1_generator(option):
         "8,6":"rock",
         
         "8,10":"rock",
+        "9,1":"sign",
         "9,3":"rock",
         "9,4":"rock",
         "9,9":"rock",
@@ -224,8 +226,10 @@ def stage_1_generator(option):
     # Special Tiles that trigger an event
     STAGE_1_SPECIAL = {       
         "1,10":"end",
+        "9,1":"sign_cave",
         "10,1":"cave_entrance_1",
         "10,4":"cave_entrance_2"
+        
     }
 
     # Decide what data to return
@@ -292,7 +296,7 @@ def cave_generator(option):
     CAVE_SPECIAL = {       
         "1,1":"cave_exit_1",
         "10,10":"cave_exit_2",
-        "8,9":"npc",
+        "8,9":"npc_grandma",
     }
 
     # Decide what data to return
@@ -361,7 +365,7 @@ def tutorial():
       "Embark now, and discover the land of the long white cloud.\n\n")
 
     try:
-        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes",turn_number,"ocean")
+        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes",turn_number,None,"ocean")
     except KeyboardInterrupt:
         print("Tutorial has been skipped! Good Luck!")
 
@@ -373,7 +377,7 @@ def tutorial_tips(turn_number):
     if turn_number == 1:
         color.write("To move in this game, we enter keywords. For example, to move up we'd type 'Move Up'. Try it out!")
     elif turn_number == 2:
-        color.write("Great job! In this game, M stands for mountain, and R stands for rock. You're the X, and your goal is the E.")
+        color.write("Great job! In this game, M stands for mountain, and R stands for rock. You're the X, and your goal is the ⋆.")
     elif turn_number == 3:
         color.write("Did you know, you can type the intials of some actions to trigger them? Try typing 'u'!")
     elif turn_number == 4:
@@ -390,7 +394,7 @@ Eating doesn't consume a turn, so afterwards keep moving up.""")
     print("")
 # ------------------ Map Gen Stage 1 -----------------
 
-def stage_1(player, fish, hunger, turn_number):
+def stage_1(player, fish, hunger, turn_number, items):
     """Stage 1"""
     # Setup values to be used in current stage
     TILES = tile_set()
@@ -400,12 +404,12 @@ def stage_1(player, fish, hunger, turn_number):
     special = stage_1_generator("special")                              
     default_tile = "ocean"
     
-    stats = turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no", turn_number,"ocean")
+    stats = turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no", turn_number, items, "ocean")
     return stats
 
 # ------------------ Map Gen Cave -----------------
 
-def cave(player, fish, hunger, turn_number):
+def cave(player, fish, hunger, turn_number, items):
     """Cave"""
     # Setup values to be used in current stage
     TILES = tile_set()
@@ -415,7 +419,7 @@ def cave(player, fish, hunger, turn_number):
     special = cave_generator("special")
     default_tile = "dirt"
 
-    stats = turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no",turn_number,"dirt")
+    stats = turn(player,stage,stage_tiles,special,TILES,fish,hunger,"no",turn_number, items, "dirt")
     return stats
 ## =====----------- Turn Mechanics ----------=====
 
@@ -586,7 +590,8 @@ def replenishment_processor(fish,hunger):
 
 #  ------------------ Movement -----------------
 def movement_processor(stage, player,
-                       stage_tiles,command):
+                       stage_tiles,command,
+                       special,items):
     """Takes input from players to move"""
     player_x = player[0]
     player_y = player[1]
@@ -604,17 +609,30 @@ def movement_processor(stage, player,
 
     # Movement validation
     player_new = [player_x, player_y]
+
+    #  Special Checker
+    special, items, valid = special_condition_checker(special, items, player_new)
+    if valid:
+        pass                  
+    else:
+        player_new = player
+        player_new.append(True)   
+        return player_new, special, items
+
+    #  Boundary and Collision checking
     valid = boundary_checker(stage, player_new)
     if valid:
-        valid = tile_checker(stage_tiles, player_new)
-        
+        valid = tile_checker(stage_tiles, player_new)   
     # Reset the program
     if not valid:
         player_new = player
         player_new.append(False)
     else:
-        player_new.append(True)   
-    return player_new 
+        player_new.append(True)
+    
+
+    return player_new, special, items
+        
 
 def boundary_checker(stage, player_new):
     """Checks to see whether movement is would take the player out of bounds"""
@@ -651,16 +669,19 @@ def tile_checker(stage_tiles,
     return valid
 
 
-def special_condition_checker(special_tiles,
+def special_condition_checker(special_tiles, items,
                               player_new):
     """Checks to see whether there is a special condition triggered by the player"""
     tile = special_tiles.get("{0},{1}".format(player_new[0], player_new[1]), None)
-    if tile == None: # If theres no special condition on that tile
-        return
-    elif tile == "end":
+    valid = True
+
+    #  Victory conditions
+    if tile == "end":
         raise PlayerWin
     elif tile == "shop":
-        return tile
+        pass
+
+    # Stage Change Condition
     elif tile == "cave_entrance_1":
         raise PlayerCaveEnter1
     elif tile == "cave_entrance_2":
@@ -669,8 +690,28 @@ def special_condition_checker(special_tiles,
         raise PlayerCaveLeave1
     elif tile == "cave_exit_2":
         raise PlayerCaveLeave2
+
+    # NPC Condiitions
+    elif tile == "npc_grandma":
+        print("boo")
+        if items["legend_rod"] == True:
+            print("Buzz off young one")
+        else:
+            items["legend_rod"] = True
+            print("You now have the legendary rod of Maui!")
+        valid = False
+
+    # Sign Condition
+    elif tile == "sign_cave":
+        slow_print("If I remember correctly, the cave should be pretty dry.\nThere may not be limited chances for me to fish inside.\nI should probably stock up on some fish before I enter.\n")
+        time.sleep(1)
+        special_tiles["{0},{1}".format(player_new[0], player_new[1])] = None
+        
+
+    # Tutorial Conditions
     elif tile == "tutorial_end":
         raise TutorialEnd
+    return special_tiles, items, valid
 
     
     
@@ -691,10 +732,18 @@ def map_displayer(stage, player,
         while x < stage[0]+1:
             if x == player_x and y == player_y:
                 color.write(TILES.get("player", "X"), "hit")
+
             elif ("{0},{1}".format(x, y) in stage_tiles
                   and "{0},{1}".format(x, y) in special_tiles):
-                tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
-                color.write(TILES[tile], "STRING")
+                if (stage_tiles["{0},{1}".format(x, y)] == "npc"
+                    or stage_tiles["{0},{1}".format(x, y)] == "sign"):
+                    tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
+                    color.write(TILES[tile], "KEYWORD")
+                
+                else:
+                    tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
+                    color.write(TILES[tile], "STRING")
+
             elif "{0},{1}".format(x, y) in stage_tiles:
                 if (stage_tiles["{0},{1}".format(x, y)] == "rock"
                     or stage_tiles["{0},{1}".format(x, y)] == "mountain"):
@@ -713,7 +762,7 @@ def map_displayer(stage, player,
         x = 1
 
 ## =====----------- Turn ----------=====
-def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number, default_tile):
+def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number, items, default_tile):
     """A turn"""
     try:
         playing = True
@@ -785,9 +834,8 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                 else:
 
                     if command[0] == 'movement':   
-                            player = movement_processor(stage, player, stage_tiles, command)
+                            player, special, items = movement_processor(stage, player, stage_tiles, command, special, items)
                             if player[2] == True:
-                                update = special_condition_checker(special, player)
                                 
                                 turn = False
                                 del player[-1]
@@ -816,19 +864,19 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
         ending("starve")
     except PlayerCaveEnter1:
         stage = cave_generator("stage")
-        stats = ["cave",[1,1], fish, hunger, turn_number]
+        stats = ["cave",[1,1], fish, hunger, turn_number, items]
         return stats
     except PlayerCaveEnter2:
         stage = cave_generator("stage")
-        stats = ["cave",[10,10], fish, hunger, turn_number]
+        stats = ["cave",[10,10], fish, hunger, turn_number, items]
         return stats
     except PlayerCaveLeave1:
         stage = stage_1_generator("stage")
-        stats = ["stage_1",[10,1], fish, hunger, turn_number]
+        stats = ["stage_1",[10,1], fish, hunger, turn_number, items]
         return stats
     except PlayerCaveLeave2:
         stage = stage_1_generator("stage")
-        stats = ["stage_1",[10,4], fish, hunger, turn_number]
+        stats = ["stage_1",[10,4], fish, hunger, turn_number, items]
         return stats
     except TutorialEnd:
         pass
@@ -854,14 +902,17 @@ def main():
         stats = save_file
     else:
         stage = stage_1_generator("stage")
-        stats = ["stage_1",stage[1],1,7,0]  # [Stage, Player, Fish, Hunger, Turn, Item]
+        stats = ["cave",[8,8],1,7,0,
+                 {"legend_rod":False,
+                  "rock_smasher":False,
+                  }]  # [Stage, Player, Fish, Hunger, Turn, Item]
 
     intro("stage_1")
     while True:
     
         if stats[0] == "stage_1":
-            stats = stage_1(stats[1], stats[2], stats[3], stats[4])
+            stats = stage_1(stats[1], stats[2], stats[3], stats[4],stats[5])
         elif stats[0] == "cave":
-            stats = cave(stats[1], stats[2], stats[3], stats[4])
+            stats = cave(stats[1], stats[2], stats[3], stats[4],stats[5])
 
 main()
