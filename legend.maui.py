@@ -55,6 +55,7 @@ def intro(type):
         time.sleep(0.5)
         color.write("                 Press ENTER to begin!","KEYWORD")
         input()
+
     elif type == "stage_1":
         try:
             print("Ctrl + C to skip!")
@@ -109,6 +110,7 @@ def slow_print(text,color_choice = None):
         else:
             color.write(letter,color_choice)
         time.sleep(0.01)
+        
 
 def fast_print(text,color_choice = None):
     for letter in text:
@@ -228,8 +230,10 @@ def stage_1_generator(option):
         "1,10":"end",
         "9,1":"sign_cave",
         "10,1":"cave_entrance_1",
-        "10,4":"cave_entrance_2"
-        
+        "10,4":"cave_entrance_2",
+        "1,9":"dark_water",
+        "2,9":"dark_water",
+        "2,10":"dark_water"
     }
 
     # Decide what data to return
@@ -506,11 +510,15 @@ Enter nothing to exit the help module""").lower().strip()
           
         
 #  ------------------ Fishing/Hunger -----------------
-def fishing_processor(player,stage_tiles,fish,default_tile):
+def fishing_processor(player,stage_tiles,fish,default_tile,items):
     """Process fishing"""
-    fish_chance = 70
     tile = stage_tiles.get("{0},{1}".format(player[0], player[1]), default_tile)
     zipped = []
+    if items['legend_rod'] == True:
+        fish_chance = 100
+        print("You sense the rod of legends resonating with Tūmatauenga, enchancing your fishing abilities.")
+    else:
+        fish_chance = 70
     if tile == "ocean":
         fish_check = random.randint(1,100)
         if fish_check <= fish_chance - 40:
@@ -753,6 +761,11 @@ def map_displayer(stage, player,
                 else:
                     tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
                     color.write(TILES[tile], "stdout")
+
+            elif "{0},{1}".format(x,y) in special_tiles:
+                if (special_tiles["{0},{1}".format(x, y)] == "dark_water"):
+                    tile = stage_tiles.get("{0},{1}".format(x, y), default_tile)
+                    color.write(TILES[tile],"stdin")        
             else:
                 print(TILES[default_tile], end='')
             x += 1
@@ -847,7 +860,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                                 del player[-1]
                             
                     elif command[0] == 'fishing':
-                        fish, turn = fishing_processor(player,stage_tiles,fish,default_tile)
+                        fish, turn = fishing_processor(player,stage_tiles,fish,default_tile, items)
 
                     elif command[0] == 'eat':
                         unzip = replenishment_processor(fish,hunger)
