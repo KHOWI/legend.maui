@@ -64,7 +64,7 @@ def intro(type):
             intro_dots()
             slow_print("They plan to leave for the high seas to fish without me")
             intro_dots()
-            slow_print("They think me not capable, they despise me, and so they exclude me")
+            slow_print("They think I'm not capable, they despise me, and so they exclude me")
             intro_dots()
             slow_print("Ha")
             intro_dots()
@@ -159,8 +159,55 @@ def ending(type):
                       \_ _/\n""")
         color.write("You've fished up the North Island! Thanks for playing!","KEYWORD")
     elif type == "starve":
-        color.write("lol you were hungry so you went home")
-    exit()
+        color.write("Though Māui's resolve is strong, the pains of starvation broke his will.\nHe decided his brothers were right and headed home.\n")
+        color.write("GAME OVER! YOU LOST THIS TIME, BUT MAYBE YOU CAN HELP MĀUI FUFILL HIS DESTINY IF YOU TRY AGAIN?","ERROR")
+    
+
+def win():
+    """Triggers when the player steps on the Star of Tangaroa"""
+    try:
+        color.write("=============================================\n","BUILTIN")
+        print("Ctrl + C to skip!")
+        slow_print("Finally")
+        intro_dots()
+        slow_print("I am here at the Star of Tangaroa~")
+        time.sleep(0.5)
+        slow_print("I wield the fishing rod of legends, and it is now time for the greatest catch~")
+        time.sleep(0.5)
+        slow_print("Time to fish.~~","ERROR")
+    except:
+        pass
+    fishing = True
+    while fishing:
+        command = input("Enter a command: ").lower()
+        if command == 'fish' or command == 'f' or command == 'fishing':
+            fishing = False
+        else:
+            color.write("The time for the greatest catch is here. You wouldn't miss this for the world would you?\n\n","ERROR")
+
+    try:
+        color.write("=============================================\n","BUILTIN")
+        print("Ctrl + C to skip!")
+        slow_print("Nnngh!~")
+        time.sleep(0.5)
+        slow_print("This is a big one!~")
+        time.sleep(0.5)
+        slow_print("BUT I AM MĀUI-POTIKI, AND NO CATCH WILL BEST ME!")
+        time.sleep(0.5)
+        slow_print("THIS","ERROR")
+        time.sleep(0.2)
+        slow_print("IS","ERROR")
+        time.sleep(0.2)
+        slow_print("MY","ERROR")
+        time.sleep(0.2)
+        slow_print("LEGEND!","ERROR")
+        time.sleep(2)
+        
+    except:
+        pass
+    ending("win")
+    
+    
 ## =====----------- Map Generation ----------=====
 def tile_set():
     """Contains the data for tiles"""
@@ -362,7 +409,7 @@ def tutorial():
     hunger = 6
     turn_number = 0
 
-    print("Tutorial has been triggered!")
+    print("Tutorial has been triggered! Enter Ctrl + C to skip at any time")
     # Introduction to Maui
     color.write("\nHaere Mai Māui-tikitiki-a-Taranga, Māui-pōtiki, divine descendant of Tama-nui-te-rā.\n"
       "Your future deeds are great and many, and now is the time to claim the title of Maui-te-whare-kino.\n"
@@ -475,7 +522,7 @@ def command_processor():
         elif validity == 1:
             return command
         elif validity == 0:
-            print("Please enter a keyword. Enter help for instructions.")
+            color.write("Please enter a keyword. Enter help for instructions.\n\n","ERROR")
         
 #  ------------------ Help -----------------
 def help_module():
@@ -688,7 +735,10 @@ def special_condition_checker(special_tiles, items,
 
     #  Victory conditions
     if tile == "end":
-        raise PlayerWin
+        if items["legend_rod"] == True:
+            raise PlayerWin
+        else:
+            color.write("My current rod won't be sufficient for this catch. I must go find my grandma~~","ERROR")
     elif tile == "shop":
         pass
 
@@ -706,10 +756,15 @@ def special_condition_checker(special_tiles, items,
     elif tile == "npc_grandma":
         print("boo")
         if items["legend_rod"] == True:
-            print("Buzz off young one")
+            try:
+                slow_print("There is nothing more I can grant you child. Noho ora mai~")
+            except KeyboardInterrupt:
+                p
         else:
             items["legend_rod"] = True
-            print("You now have the legendary rod of Maui!")
+            color.write("=============================================\n","BUILTIN")
+            print("Ctrl + C to skip!")
+            slow_print("You now have the legendary rod of Maui!~","KEYWORD")
         valid = False
 
     # Sign Condition
@@ -841,7 +896,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                     elif(tutorial =="yes"
                          and turn_number == 6
                              and command[0] != 'fishing'):
-                        color.write("Hey! Now would be a good time to fish!")
+                        color.write("Hey! Now would be a good time to fish!\n\n","ERROR")
                     elif(tutorial =="yes"
                          and turn_number ==6
                              and command[0] == 'fishing'):
@@ -876,12 +931,12 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                         else:
                             print("Beep Boop")
                 except IndexError:
-                    color.write("Please try something else\n","ERROR")
+                    color.write("Please try something else!\n\n","ERROR")
 
             #  Perform post turn actions
     #  Conditions            
     except PlayerWin:
-        ending("win")
+        win()
     except PlayerStarve:
         ending("starve")
     except PlayerCaveEnter1:
@@ -911,15 +966,15 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
 def main():
     """Main Routine"""
     
-    intro("opening")
-    
-    start_tutorial = input("Would you like to play the tutorial?").lower().strip()
-    if start_tutorial == "no" or start_tutorial == "n":
-        pass
-    else:
-        tutorial()
+##    intro("opening")
+##    
+##    start_tutorial = input("Would you like to play the tutorial?").lower().strip()
+##    if start_tutorial == "no" or start_tutorial == "n":
+##        pass
+##    else:
+    tutorial()
 
-    save_file = False
+    save_file = False #This is all technically depreciated code because im a fucking idiot
     if save_file == True:
         stats = save_file
     else:
