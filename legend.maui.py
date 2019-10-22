@@ -1,6 +1,6 @@
 ##
 #  The Legend of Maui
-#  V1.05
+#  V1.06
 ## =====----------- Color Module ----------=====
 import time
 import random
@@ -369,7 +369,10 @@ def tutorial():
       "Embark now, and discover the land of the long white cloud.\n\n")
 
     try:
-        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes",turn_number,None,"ocean")
+        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes",turn_number,
+                 {"legend_rod":False,
+                  "rock_smasher":False,
+                  },"ocean")
     except KeyboardInterrupt:
         print("Tutorial has been skipped! Good Luck!")
 
@@ -670,7 +673,7 @@ def tile_checker(stage_tiles,
     #  Check each possible terrain
     if tile == "rock" or tile == "mountain":
         valid = False
-        color.write("You can't sail into a {}!\n".format(tile),"ERROR")
+        color.write("You can't move into a {}!\n".format(tile),"ERROR")
     else:
         valid = True
 
@@ -804,70 +807,76 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                     help_module()
 
                 #  Tutorial Conditions start here
-                if( tutorial == "yes"
-                    and turn_number < 4 
-                        and command[1] != " up "
-                            and command[1] != " u "
-                                and command[1] != " north "):    
-                    color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
-                elif(tutorial == "yes"
-                     and turn_number == 4
-                         and command[1] != " r "
-                             and command[1] != " right "
-                                 and command[1] != " west"
-                                     and command[1] != " left "
-                                         and command[1] != " l "
-                                             and command[1] != " east "):
-                    color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
-                elif(tutorial == "yes"
-                     and turn_number == 5
-                         and hunger < 4
-                             and command[0] != 'eat'):
-                     color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
-                elif(tutorial =="yes"
-                     and turn_number == 5
-                         and hunger > 4
+                try:
+                    if( tutorial == "yes"
+                        and turn_number < 4 
                             and command[1] != " up "
                                 and command[1] != " u "
-                                    and command[1] != " north "):
-                    color.write("Now that you're full, let's continue moving up!\n\n", "ERROR")
-                elif(tutorial =="yes"
-                     and turn_number == 6
-                         and command[0] != 'fishing'):
-                    color.write("Hey! Now would be a good time to fish!")
-                elif(tutorial =="yes"
-                     and turn_number ==6
-                         and command[0] == 'fishing'):
-                    fish += 1
-                    print("You caught a fish! You now have {0} fish.".format(fish))
-                    turn = False
-                    pass
+                                    and command[1] != " north "):    
+                        color.write("Hey! Just keep going up for now, ok?\n\n","ERROR")
+                    elif(tutorial == "yes"
+                         and turn_number == 4
+                             and command[1] != " r "
+                                 and command[1] != " right "
+                                     and command[1] != " west"
+                                         and command[1] != " left "
+                                             and command[1] != " l "
+                                                 and command[1] != " east "
+                                                     and command[1] != " up "
+                                                         and command[1] != " north "
+                                                            and command[1] != " u "):
+                        color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
+                    elif(tutorial == "yes"
+                         and turn_number == 5
+                             and hunger < 4
+                                 and command[0] != 'eat'):
+                         color.write("Hey! Maui's feeling kinda hungry, maybe eat some grub!\n\n","ERROR")
+                    elif(tutorial =="yes"
+                         and turn_number == 5
+                             and hunger > 4
+                                and command[1] != " up "
+                                    and command[1] != " u "
+                                        and command[1] != " north "):
+                        color.write("Now that you're full, let's continue moving up!\n\n", "ERROR")
+                    elif(tutorial =="yes"
+                         and turn_number == 6
+                             and command[0] != 'fishing'):
+                        color.write("Hey! Now would be a good time to fish!")
+                    elif(tutorial =="yes"
+                         and turn_number ==6
+                             and command[0] == 'fishing'):
+                        fish += 1
+                        print("You caught a fish! You now have {0} fish.".format(fish))
+                        turn = False
+                        pass
 
-                #  Tutorial Conditions end here
-                else:
-
-                    if command[0] == 'movement':   
-                            player, special, items = movement_processor(stage, player, stage_tiles, command, special, items)
-                            if player[2] == True:
-                                
-                                turn = False
-                                del player[-1]
-
-                            elif player[2] == False:
-                                del player[-1]
-                            else:
-                                print("Something critical has occured within the movement processcer")
-                                del player[-1]
-                            
-                    elif command[0] == 'fishing':
-                        fish, turn = fishing_processor(player,stage_tiles,fish,default_tile, items)
-
-                    elif command[0] == 'eat':
-                        unzip = replenishment_processor(fish,hunger)
-                        fish = unzip[0]
-                        hunger = unzip[1]
+                    #  Tutorial Conditions end here
                     else:
-                        print("Beep Boop")
+
+                        if command[0] == 'movement':   
+                                player, special, items = movement_processor(stage, player, stage_tiles, command, special, items)
+                                if player[2] == True:
+                                    
+                                    turn = False
+                                    del player[-1]
+
+                                elif player[2] == False:
+                                    del player[-1]
+                                else:
+                                    print("Something critical has occured within the movement processcer")
+                                    del player[-1]
+                                
+                        elif command[0] == 'fishing':
+                            fish, turn = fishing_processor(player,stage_tiles,fish,default_tile, items)
+
+                        elif command[0] == 'eat':
+                            unzip = replenishment_processor(fish,hunger)
+                            fish = unzip[0]
+                            hunger = unzip[1]
+                        else:
+                            print("Beep Boop")
+                except:
+                    color.write("Please try something else\n","ERROR")
 
             #  Perform post turn actions
     #  Conditions            
