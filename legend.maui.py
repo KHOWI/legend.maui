@@ -875,7 +875,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                             hunger = unzip[1]
                         else:
                             print("Beep Boop")
-                except:
+                except IndexError:
                     color.write("Please try something else\n","ERROR")
 
             #  Perform post turn actions
