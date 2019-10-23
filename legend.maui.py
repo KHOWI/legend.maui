@@ -1,6 +1,8 @@
 ##
 #  The Legend of Maui
-#  V1.05
+
+#  V1.06
+
 ## =====----------- Color Module ----------=====
 import time
 import random
@@ -64,7 +66,7 @@ def intro(type):
             intro_dots()
             slow_print("They plan to leave for the high seas to fish without me")
             intro_dots()
-            slow_print("They think me not capable, they despise me, and so they exclude me")
+            slow_print("They think I'm not capable, they despise me, and so they exclude me")
             intro_dots()
             slow_print("Ha")
             intro_dots()
@@ -126,8 +128,7 @@ def ending(type):
     """Determines the type of ending a user gets"""
     
     if type == "win":
-        time.sleep(1)
-        color.write("""
+        slow_print("""
                     -                                  
                     \ \                               
                     /    \                            
@@ -156,11 +157,59 @@ def ending(type):
                       /        /                  
                       |      /                    
                       |    /                      
-                      \_ _/\n""")
+                      \_ _/~""","KEYWORD")
         color.write("You've fished up the North Island! Thanks for playing!","KEYWORD")
     elif type == "starve":
-        color.write("lol you were hungry so you went home")
+        color.write("Though Māui's resolve is strong, the pains of starvation broke his will.\nHe decided his brothers were right and headed home.\n")
+        color.write("GAME OVER! YOU LOST THIS TIME, BUT MAYBE YOU CAN HELP MĀUI FUFILL HIS DESTINY IF YOU TRY AGAIN?","ERROR")
     exit()
+    
+
+def win():
+    """Triggers when the player steps on the Star of Tangaroa"""
+    try:
+        color.write("=============================================\n","BUILTIN")
+        print("Ctrl + C to skip!")
+        slow_print("Finally")
+        intro_dots()
+        slow_print("I am here at the Star of Tangaroa~")
+        time.sleep(0.5)
+        slow_print("I wield the fishing rod of legends, and it is now time for the greatest catch~")
+        time.sleep(0.5)
+        slow_print("Time to fish.~~","ERROR")
+    except:
+        pass
+    fishing = True
+    while fishing:
+        command = input("Enter a command: ").lower()
+        if command == 'fish' or command == 'f' or command == 'fishing':
+            fishing = False
+        else:
+            color.write("The time for the greatest catch is here. You wouldn't miss this for the world would you?\n\n","ERROR")
+
+    try:
+        color.write("=============================================\n","BUILTIN")
+        print("Ctrl + C to skip!")
+        slow_print("Nnngh!~")
+        time.sleep(0.5)
+        slow_print("This is a big one!~")
+        time.sleep(0.5)
+        slow_print("BUT I AM MĀUI-POTIKI, AND NO CATCH WILL BEST ME!~")
+        time.sleep(0.5)
+        slow_print("THIS~","ERROR")
+        time.sleep(0.2)
+        slow_print("IS~","ERROR")
+        time.sleep(0.2)
+        slow_print("MY~","ERROR")
+        time.sleep(0.2)
+        slow_print("LEGEND!~","ERROR")
+        time.sleep(2)
+        
+    except:
+        pass
+    ending("win")
+    
+    
 ## =====----------- Map Generation ----------=====
 def tile_set():
     """Contains the data for tiles"""
@@ -362,14 +411,18 @@ def tutorial():
     hunger = 6
     turn_number = 0
 
-    print("Tutorial has been triggered!")
+    print("Tutorial has been triggered! Enter Ctrl + C to skip at any time")
     # Introduction to Maui
     color.write("\nHaere Mai Māui-tikitiki-a-Taranga, Māui-pōtiki, divine descendant of Tama-nui-te-rā.\n"
       "Your future deeds are great and many, and now is the time to claim the title of Maui-te-whare-kino.\n"
       "Embark now, and discover the land of the long white cloud.\n\n")
 
     try:
-        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes",turn_number,None,"ocean")
+        turn(player,stage,stage_tiles,special,TILES,fish,hunger,"yes",turn_number,
+                 {"legend_rod":False,
+                  "rock_smasher":False,
+                  },"ocean")
+
     except KeyboardInterrupt:
         print("Tutorial has been skipped! Good Luck!")
 
@@ -458,12 +511,14 @@ def command_processor():
             help = ' ' + help + ' '
             if help in action:
                 command.append("help")
+                command.append(help)
                 validity += 1
 
         for eat in EAT:
             eat = ' ' + eat + ' '
             if eat in action:
                 command.append("eat")
+                command.append(eat)
                 validity += 1
         
         if validity > 1:
@@ -472,7 +527,7 @@ def command_processor():
         elif validity == 1:
             return command
         elif validity == 0:
-            print("Please enter a keyword. Enter help for instructions.")
+            color.write("Please enter a keyword. Enter help for instructions.\n\n","ERROR")
         
 #  ------------------ Help -----------------
 def help_module():
@@ -514,12 +569,14 @@ def fishing_processor(player,stage_tiles,fish,default_tile,items):
     """Process fishing"""
     tile = stage_tiles.get("{0},{1}".format(player[0], player[1]), default_tile)
     zipped = []
-    if items['legend_rod'] == True:
-        fish_chance = 100
-        print("You sense the rod of legends resonating with Tūmatauenga, enchancing your fishing abilities.")
-    else:
-        fish_chance = 70
+
     if tile == "ocean":
+        if items['legend_rod'] == True:
+            fish_chance = 100
+            print("You sense the rod of legends resonating with Tūmatauenga, enchancing your fishing abilities.")
+        else:
+            fish_chance = 70
+
         fish_check = random.randint(1,100)
         if fish_check <= fish_chance - 40:
             fish += 2
@@ -670,7 +727,7 @@ def tile_checker(stage_tiles,
     #  Check each possible terrain
     if tile == "rock" or tile == "mountain":
         valid = False
-        color.write("You can't sail into a {}!\n".format(tile),"ERROR")
+        color.write("You can't move into a {}!\n".format(tile),"ERROR")
     else:
         valid = True
 
@@ -685,7 +742,10 @@ def special_condition_checker(special_tiles, items,
 
     #  Victory conditions
     if tile == "end":
-        raise PlayerWin
+        if items["legend_rod"] == True:
+            raise PlayerWin
+        else:
+            color.write("My current rod won't be sufficient for this catch. I must go find my grandma~~","ERROR")
     elif tile == "shop":
         pass
 
@@ -701,20 +761,38 @@ def special_condition_checker(special_tiles, items,
 
     # NPC Condiitions
     elif tile == "npc_grandma":
-        print("boo")
         if items["legend_rod"] == True:
-            print("Buzz off young one")
+            slow_print("There is nothing more I can grant you child. Noho ora mai~","STRING")
+
         else:
             items["legend_rod"] = True
-            print("You now have the legendary rod of Maui!")
+            color.write("=============================================\n","BUILTIN")
+            try:
+                print("Ctrl + C to skip!")
+                slow_print("Mokopuna. Finally you arrive. Taranga has informed me of your quest~","STRING")
+                time.sleep(1)
+                slow_print("Tēnā koe Muri-ranga-whenua.~Since you know of my quest, you must know my purpose in coming here. ~")
+                time.sleep(1)
+                slow_print("Indeed. I have prepared for you a koha.~","STRING")
+                time.sleep(0.2)
+                slow_print("I bestow a fishook upon you, fashioned out of my lower jawbone.~","STRING")
+                time.sleep(0.2)
+                slow_print("It is strong and will not break under the greatest of strains. Go now mokopuna, and claim your destiny.~","STRING")
+                time.sleep(0.5)
+                slow_print("Kuai... This is a great gift. I will use it well. I thank you.~")
+                time.sleep(0.5)
+                slow_print("This counts as the blessing from the older generation to the young.~Go now. I am old, and will return to the dust soon.~","STRING")
+                time.sleep(1)
+            except KeyboardInterrupt:
+                pass
+            slow_print("You now have the legendary rod of Maui!~","KEYWORD")
         valid = False
 
     # Sign Condition
     elif tile == "sign_cave":
         slow_print("If I remember correctly, the cave should be pretty dry.\nThere may not be limited chances for me to fish inside.\nI should probably stock up on some fish before I enter.\n")
         time.sleep(1)
-        special_tiles["{0},{1}".format(player_new[0], player_new[1])] = None
-        
+    
 
     # Tutorial Conditions
     elif tile == "tutorial_end":
@@ -817,7 +895,10 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                                  and command[1] != " west"
                                      and command[1] != " left "
                                          and command[1] != " l "
-                                             and command[1] != " east "):
+                                             and command[1] != " east "
+                                                 and command[1] != " up "
+                                                     and command[1] != " north "
+                                                        and command[1] != " u "):
                     color.write("Hey! Just move right or left for now, ok?\n\n","ERROR")
                 elif(tutorial == "yes"
                      and turn_number == 5
@@ -834,7 +915,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
                 elif(tutorial =="yes"
                      and turn_number == 6
                          and command[0] != 'fishing'):
-                    color.write("Hey! Now would be a good time to fish!")
+                    color.write("Hey! Now would be a good time to fish!\n\n","ERROR")
                 elif(tutorial =="yes"
                      and turn_number ==6
                          and command[0] == 'fishing'):
@@ -872,7 +953,7 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
             #  Perform post turn actions
     #  Conditions            
     except PlayerWin:
-        ending("win")
+        win()
     except PlayerStarve:
         ending("starve")
     except PlayerCaveEnter1:
@@ -910,7 +991,7 @@ def main():
     else:
         tutorial()
 
-    save_file = False
+    save_file = False #This is all technically depreciated code because im a fucking idiot
     if save_file == True:
         stats = save_file
     else:
