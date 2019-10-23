@@ -508,12 +508,14 @@ def command_processor():
             help = ' ' + help + ' '
             if help in action:
                 command.append("help")
+                command.append(help)
                 validity += 1
 
         for eat in EAT:
             eat = ' ' + eat + ' '
             if eat in action:
                 command.append("eat")
+                command.append(eat)
                 validity += 1
         
         if validity > 1:
@@ -978,13 +980,13 @@ def turn(player,stage,stage_tiles,special,TILES,fish,hunger,tutorial,turn_number
 def main():
     """Main Routine"""
     
-##    intro("opening")
-##    
-##    start_tutorial = input("Would you like to play the tutorial?").lower().strip()
-##    if start_tutorial == "no" or start_tutorial == "n":
-##        pass
-##    else:
-    tutorial()
+    intro("opening")
+    
+    start_tutorial = input("Would you like to play the tutorial?").lower().strip()
+    if start_tutorial == "no" or start_tutorial == "n":
+        pass
+    else:
+        tutorial()
 
     save_file = False #This is all technically depreciated code because im a fucking idiot
     if save_file == True:
