@@ -1,6 +1,8 @@
 ##
 #  The Legend of Maui
+
 #  V1.06
+
 ## =====----------- Color Module ----------=====
 import time
 import random
@@ -420,6 +422,7 @@ def tutorial():
                  {"legend_rod":False,
                   "rock_smasher":False,
                   },"ocean")
+
     except KeyboardInterrupt:
         print("Tutorial has been skipped! Good Luck!")
 
@@ -789,7 +792,7 @@ def special_condition_checker(special_tiles, items,
     elif tile == "sign_cave":
         slow_print("If I remember correctly, the cave should be pretty dry.\nThere may not be limited chances for me to fish inside.\nI should probably stock up on some fish before I enter.\n")
         time.sleep(1)
-        
+    
 
     # Tutorial Conditions
     elif tile == "tutorial_end":
